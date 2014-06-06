@@ -1,0 +1,7 @@
+syntax: glob
+*.pyc
+*.dblite
+release/
+debug/
+.build/
+externals/*/
