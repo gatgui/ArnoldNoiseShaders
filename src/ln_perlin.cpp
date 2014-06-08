@@ -1,19 +1,20 @@
 #include <ai.h>
-#include "libnoise/perlin.h"
+#include "libnoise/noisegen.h"
 #include "ln_quality.h"
 
 AI_SHADER_NODE_EXPORT_METHODS(PerlinMtd);
 
 enum PerlinParams
 {
-   p_frequency = 0,
-   p_lacunarity,
+   p_input = 0,
+   p_custom_input,
+   p_amplitude,
+   p_frequency,
    p_octaves,
    p_persistence,
-   p_quality,
+   p_lacunarity,
    p_seed,
-   p_input,
-   p_custom_input
+   p_quality
 };
 
 enum Input
@@ -37,14 +38,15 @@ static const char* InputNames[] =
 
 node_parameters
 {
-   AiParameterFlt("frequency", 1.0f);
-   AiParameterFlt("lacunarity", 2.0f);
-   AiParameterInt("octaves", 6);
-   AiParameterFlt("persistence", 0.5f);
-   AiParameterEnum("quality", NQ_std, NoiseQualityNames);
-   AiParameterInt("seed", 0);
    AiParameterEnum("input", I_P, InputNames);
    AiParameterPnt("custom_input", 0.0f, 0.0f, 0.0f);
+   AiParameterFlt("amplitude", 1.0f);
+   AiParameterFlt("frequency", 1.0f);
+   AiParameterInt("octaves", 6);
+   AiParameterFlt("persistence", 0.5f);
+   AiParameterFlt("lacunarity", 2.0f);
+   AiParameterInt("seed", 0);
+   AiParameterEnum("quality", NQ_std, NoiseQualityNames);
    
    AiMetaDataSetBool(mds, "quality", "linkable", false);
    AiMetaDataSetBool(mds, "input", "linkable", false);
@@ -52,8 +54,6 @@ node_parameters
 
 node_initialize
 {
-   noise::module::Perlin *ln_mod = new noise::module::Perlin();
-   AiNodeSetLocalData(node, ln_mod);
 }
 
 node_update
@@ -62,24 +62,20 @@ node_update
 
 node_finish
 {
-   noise::module::Perlin *ln_mod = (noise::module::Perlin*) AiNodeGetLocalData(node);
-   delete ln_mod;
 }
 
 shader_evaluate
 {
-   noise::module::Perlin *ln_mod = (noise::module::Perlin*) AiNodeGetLocalData(node);
-   
-   ln_mod->SetFrequency(AiShaderEvalParamFlt(p_frequency));
-   ln_mod->SetLacunarity(AiShaderEvalParamFlt(p_lacunarity));
-   ln_mod->SetOctaveCount(AiShaderEvalParamInt(p_octaves));
-   ln_mod->SetPersistence(AiShaderEvalParamFlt(p_persistence));
-   ln_mod->SetNoiseQuality((noise::NoiseQuality) AiShaderEvalParamInt(p_quality));
-   ln_mod->SetSeed(AiShaderEvalParamInt(p_seed));
-   
-   AtPoint P;
+   float amplitude = AiShaderEvalParamFlt(p_amplitude);
+   float frequency = AiShaderEvalParamFlt(p_frequency);
+   float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
+   int octaves = AiShaderEvalParamInt(p_octaves);
+   float persistence = AiShaderEvalParamFlt(p_persistence);
+   noise::NoiseQuality quality = (noise::NoiseQuality) AiShaderEvalParamInt(p_quality);
+   int seed = AiShaderEvalParamInt(p_seed);
    
    Input input = (Input) AiShaderEvalParamInt(p_input);
+   AtPoint P;
    
    switch (input)
    {
@@ -107,5 +103,31 @@ shader_evaluate
       break;
    }
    
-   sg->out.FLT = ln_mod->GetValue(P.x, P.y, P.z);
+   sg->out.FLT = 0.0f;
+   
+   float curAmplitude = amplitude;
+   float x = P.x * frequency;
+   float y = P.y * frequency;
+   float z = P.z * frequency;
+   float nx, ny, nz;
+   
+   for (int curOctave=0; curOctave<octaves; ++curOctave)
+   {
+      // Make sure that these floating-point values have the same range as a 32-
+      // bit integer so that we can pass them to the coherent-noise functions.
+      nx = noise::MakeInt32Range(x);
+      ny = noise::MakeInt32Range(y);
+      nz = noise::MakeInt32Range(z);
+
+      // Get the coherent-noise value from the input value and add it to the final result.
+      seed = (seed + curOctave) & 0xffffffff;
+      sg->out.FLT += curAmplitude * noise::GradientCoherentNoise3D(nx, ny, nz, seed, quality);
+
+      // Prepare the next octave.
+      x *= lacunarity;
+      y *= lacunarity;
+      z *= lacunarity;
+      
+      curAmplitude *= persistence;
+   }
 }
