@@ -12,6 +12,7 @@ const char* NoiseQualityNames[] =
 };
 
 extern AtNodeMethods *PerlinMtd;
+extern AtNodeMethods *BillowMtd;
 
 node_loader
 {
@@ -22,6 +23,13 @@ node_loader
       node->node_type = AI_NODE_SHADER;
       node->output_type = AI_TYPE_FLOAT;
       node->methods = PerlinMtd;
+      strcpy(node->version, AI_VERSION);
+      return true;
+   case 1:
+      node->name = "ln_billow";
+      node->node_type = AI_NODE_SHADER;
+      node->output_type = AI_TYPE_FLOAT;
+      node->methods = BillowMtd;
       strcpy(node->version, AI_VERSION);
       return true;
    default:
