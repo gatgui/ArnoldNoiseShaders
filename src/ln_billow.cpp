@@ -109,30 +109,28 @@ shader_evaluate
    float curAmplitude = amplitude;
    float curPersistence = 1.0f;
    float normalizer = 0.0f;
-   float x = P.x * frequency;
-   float y = P.y * frequency;
-   float z = P.z * frequency;
    float nx, ny, nz;
-   float nval;
+   
+   P.x *= frequency;
+   P.y *= frequency;
+   P.z *= frequency;
    
    for (int curOctave=0; curOctave<octaves; ++curOctave)
    {
       // Make sure that these floating-point values have the same range as a 32-
       // bit integer so that we can pass them to the coherent-noise functions.
-      nx = noise::MakeInt32Range(x);
-      ny = noise::MakeInt32Range(y);
-      nz = noise::MakeInt32Range(z);
+      nx = noise::MakeInt32Range(P.x);
+      ny = noise::MakeInt32Range(P.y);
+      nz = noise::MakeInt32Range(P.z);
 
       // Get the coherent-noise value from the input value and add it to the final result.
       seed = (seed + curOctave) & 0xffffffff;
-      nval = noise::GradientCoherentNoise3D(nx, ny, nz, seed, quality);
-      nval = 2.0f * fabsf(nval) - 1.0f;
-      sg->out.FLT += curAmplitude * nval;
+      sg->out.FLT += fabsf(curAmplitude * noise::GradientCoherentNoise3D(nx, ny, nz, seed, quality));
 
       // Prepare the next octave.
-      x *= lacunarity;
-      y *= lacunarity;
-      z *= lacunarity;
+      P.x *= lacunarity;
+      P.y *= lacunarity;
+      P.z *= lacunarity;
       
       normalizer += curPersistence;
       
