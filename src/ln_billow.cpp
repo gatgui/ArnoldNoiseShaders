@@ -1,4 +1,5 @@
 #include <ai.h>
+#include <algorithm>
 #include "libnoise/noisegen.h"
 #include "ln_quality.h"
 
@@ -106,6 +107,8 @@ shader_evaluate
    sg->out.FLT = 0.0f;
    
    float curAmplitude = amplitude;
+   float curPersistence = 1.0f;
+   float normalizer = 0.0f;
    float x = P.x * frequency;
    float y = P.y * frequency;
    float z = P.z * frequency;
@@ -131,8 +134,11 @@ shader_evaluate
       y *= lacunarity;
       z *= lacunarity;
       
+      normalizer += curPersistence;
+      
+      curPersistence *= persistence;
       curAmplitude *= persistence;
    }
    
-   sg->out.FLT += 0.5f;
+   sg->out.FLT = std::max(0.0f, sg->out.FLT / normalizer);
 }
