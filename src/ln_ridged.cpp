@@ -65,6 +65,15 @@ shader_evaluate
    
    AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
+   fBm<PerlinGenerator, RidgeModifier> generator(octaves, amplitude, 1.0f, frequency, lacunarity, seed, quality);
+   
+   generator.extra_params().offset = offset;
+   generator.extra_params().gain = gain;
+   generator.extra_params().exponent = exponent;
+   
+   sg->out.FLT = generator.eval(P);
+   
+   /*
    P *= frequency;
    
    sg->out.FLT = 0.0f;
@@ -101,7 +110,7 @@ shader_evaluate
    }
    
    sg->out.FLT = 1.25f * sg->out.FLT - 1.0f;
+   */
    
-   // re-normalize
    sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
 }

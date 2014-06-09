@@ -59,7 +59,9 @@ shader_evaluate
    
    AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
-   sg->out.FLT = AbsFractal(P, octaves, amplitude, persistence, frequency, lacunarity, seed, quality);
+   //sg->out.FLT = AbsFractal(P, octaves, amplitude, persistence, frequency, lacunarity, seed, quality);
+   fBm<PerlinGenerator, AbsoluteModifier> generator(amplitude, persistence, frequency, lacunarity, seed, quality);
+   sg->out.FLT = generator.eval(P);
    
    sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
 }
