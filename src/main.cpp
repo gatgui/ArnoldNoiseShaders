@@ -3,16 +3,11 @@
 #include <cstdio>
 #include <cstring>
 
-const char* NoiseQualityNames[] = 
-{
-   "fast",
-   "standard",
-   "best",
-   NULL
-};
-
 extern AtNodeMethods *PerlinMtd;
 extern AtNodeMethods *BillowMtd;
+extern AtNodeMethods *TurbulenceMtd;
+extern AtNodeMethods *VoronoiMtd;
+extern AtNodeMethods *RidgedMtd;
 
 node_loader
 {
@@ -30,6 +25,27 @@ node_loader
       node->node_type = AI_NODE_SHADER;
       node->output_type = AI_TYPE_FLOAT;
       node->methods = BillowMtd;
+      strcpy(node->version, AI_VERSION);
+      return true;
+   case 2:
+      node->name = "ln_turbulence";
+      node->node_type = AI_NODE_SHADER;
+      node->output_type = AI_TYPE_POINT;
+      node->methods = TurbulenceMtd;
+      strcpy(node->version, AI_VERSION);
+      return true;
+   case 3:
+      node->name = "ln_voronoi";
+      node->node_type = AI_NODE_SHADER;
+      node->output_type = AI_TYPE_FLOAT;
+      node->methods = VoronoiMtd;
+      strcpy(node->version, AI_VERSION);
+      return true;
+   case 4:
+      node->name = "ln_ridged";
+      node->node_type = AI_NODE_SHADER;
+      node->output_type = AI_TYPE_FLOAT;
+      node->methods = RidgedMtd;
       strcpy(node->version, AI_VERSION);
       return true;
    default:

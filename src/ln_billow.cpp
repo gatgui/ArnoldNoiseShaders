@@ -1,7 +1,4 @@
-#include <ai.h>
-#include <algorithm>
-#include "libnoise/noisegen.h"
-#include "ln_quality.h"
+#include "ln_common.h"
 
 AI_SHADER_NODE_EXPORT_METHODS(BillowMtd);
 
@@ -16,25 +13,6 @@ enum BillowParams
    p_lacunarity,
    p_seed,
    p_quality
-};
-
-enum Input
-{
-   I_P = 0,
-   I_Pref,
-   I_Po,
-   I_UV,
-   I_Custom
-};
-
-static const char* InputNames[] =
-{
-   "P",
-   "Pref",
-   "Po",
-   "UV",
-   "Custom",
-   NULL
 };
 
 node_parameters
@@ -59,6 +37,7 @@ node_initialize
 
 node_update
 {
+   AiNodeSetLocalData(node, (void*) (AiNodeIsLinked(node, "custom_input") ? 1 : 0));
 }
 
 node_finish
@@ -67,76 +46,20 @@ node_finish
 
 shader_evaluate
 {
+   bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
+   
    float amplitude = AiShaderEvalParamFlt(p_amplitude);
    float frequency = AiShaderEvalParamFlt(p_frequency);
    float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
    int octaves = AiShaderEvalParamInt(p_octaves);
    float persistence = AiShaderEvalParamFlt(p_persistence);
-   noise::NoiseQuality quality = (noise::NoiseQuality) AiShaderEvalParamInt(p_quality);
+   NoiseQuality quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
    int seed = AiShaderEvalParamInt(p_seed);
-   
    Input input = (Input) AiShaderEvalParamInt(p_input);
-   AtPoint P;
    
-   switch (input)
-   {
-   case I_P:
-      P = sg->P;
-      break;
-   case I_Pref:
-      if (!AiUDataGetPnt("Pref", &P))
-      {
-         P = sg->P;
-      }
-      break;
-   case I_Po:
-      P = sg->Po;
-      break;
-   case I_UV:
-      P.x = sg->u;
-      P.y = sg->v;
-      P.z = 0.0f;
-      break;
-   case I_Custom:
-      P = AiShaderEvalParamPnt(p_custom_input);
-      break;
-   default:
-      break;
-   }
+   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
-   sg->out.FLT = 0.0f;
+   sg->out.FLT = AbsFractal(P, octaves, amplitude, persistence, frequency, lacunarity, seed, quality);
    
-   float curAmplitude = amplitude;
-   float curPersistence = 1.0f;
-   float normalizer = 0.0f;
-   float nx, ny, nz;
-   
-   P.x *= frequency;
-   P.y *= frequency;
-   P.z *= frequency;
-   
-   for (int curOctave=0; curOctave<octaves; ++curOctave)
-   {
-      // Make sure that these floating-point values have the same range as a 32-
-      // bit integer so that we can pass them to the coherent-noise functions.
-      nx = noise::MakeInt32Range(P.x);
-      ny = noise::MakeInt32Range(P.y);
-      nz = noise::MakeInt32Range(P.z);
-
-      // Get the coherent-noise value from the input value and add it to the final result.
-      seed = (seed + curOctave) & 0xffffffff;
-      sg->out.FLT += fabsf(curAmplitude * noise::GradientCoherentNoise3D(nx, ny, nz, seed, quality));
-
-      // Prepare the next octave.
-      P.x *= lacunarity;
-      P.y *= lacunarity;
-      P.z *= lacunarity;
-      
-      normalizer += curPersistence;
-      
-      curPersistence *= persistence;
-      curAmplitude *= persistence;
-   }
-   
-   sg->out.FLT = std::max(0.0f, sg->out.FLT / normalizer);
+   sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
 }
