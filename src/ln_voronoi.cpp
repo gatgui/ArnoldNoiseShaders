@@ -36,8 +36,7 @@ enum OutputMode
    OM_dist_add,
    OM_dist_sub,
    OM_dist_mul,
-   OM_dist_div,
-   OM_dist_avg
+   OM_dist_div
 };
 
 static const char *OutputModeNames[] =
@@ -49,7 +48,6 @@ static const char *OutputModeNames[] =
    "dist_sub",
    "dist_mul",
    "dist_div",
-   "dist_avg",
    NULL
 };
 
@@ -192,9 +190,6 @@ shader_evaluate
       break;
    case OM_dist_div:
       sg->out.FLT = displacement * (first_dist / second_dist);
-      break;
-   case OM_dist_avg:
-      sg->out.FLT = displacement * 0.5f * (first_dist + second_dist);
       break;
    default:
       sg->out.FLT = 0.0f;
