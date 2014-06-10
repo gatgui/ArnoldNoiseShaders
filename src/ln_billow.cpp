@@ -12,7 +12,8 @@ enum BillowParams
    p_persistence,
    p_lacunarity,
    p_seed,
-   p_quality
+   p_quality,
+   p_normalize_output
 };
 
 node_parameters
@@ -26,6 +27,7 @@ node_parameters
    AiParameterFlt("lacunarity", 2.0f);
    AiParameterInt("seed", 0);
    AiParameterEnum("quality", NQ_std, NoiseQualityNames);
+   AiParameterBool("normalize_output", true);
    
    AiMetaDataSetBool(mds, "quality", "linkable", false);
    AiMetaDataSetBool(mds, "input", "linkable", false);
@@ -50,17 +52,6 @@ shader_evaluate
    Input input = (Input) AiShaderEvalParamInt(p_input);
    AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
-   #if 0
-   float amplitude = AiShaderEvalParamFlt(p_amplitude);
-   float frequency = AiShaderEvalParamFlt(p_frequency);
-   float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
-   int octaves = AiShaderEvalParamInt(p_octaves);
-   float persistence = AiShaderEvalParamFlt(p_persistence);
-   NoiseQuality quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
-   int seed = AiShaderEvalParamInt(p_seed);
-   
-   sg->out.FLT = AbsFractal(P, octaves, amplitude, persistence, frequency, lacunarity, seed, quality);
-   #else
    fBm<PerlinNoise, AbsoluteModifier> fbm(AiShaderEvalParamInt(p_octaves),
                                           AiShaderEvalParamFlt(p_amplitude),
                                           AiShaderEvalParamFlt(p_persistence),
@@ -73,7 +64,9 @@ shader_evaluate
    fbm.modifier_params.remap_range = true;
    
    sg->out.FLT = fbm.eval(P);
-   #endif
    
-   sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
+   if (AiShaderEvalParamBool(p_normalize_output))
+   {
+      sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
+   }
 }

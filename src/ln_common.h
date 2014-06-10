@@ -28,14 +28,6 @@ extern const char* InputNames[];
 
 AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *node);
 
-float Fractal(const AtPoint &inP, int octaves, float amplitude, float persistence, float frequency, float lacunarity, int seed=0, NoiseQuality quality=NQ_std);
-float AbsFractal(const AtPoint &inP, int octaves, float amplitude, float persistence, float frequency, float lacunarity, int seed=0, NoiseQuality quality=NQ_std);
-
-// redesigned fractale module
-// NoiseBase is a class with 2 operator() defined taking 3 floats or a single float
-// first variant is called per octave, second to adjust final value
-// the class must have a constructor that takes 2 parameters: the noise seed and quality
-
 
 class fBmBase
 {

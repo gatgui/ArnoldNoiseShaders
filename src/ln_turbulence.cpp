@@ -50,14 +50,13 @@ shader_evaluate
    static float z2 = (44845.0f / 65536.0f);
    
    bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
+   Input input = (Input) AiShaderEvalParamInt(p_input);
+   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
    float frequency = AiShaderEvalParamFlt(p_frequency);
    float power = AiShaderEvalParamFlt(p_power);
    int roughness = AiShaderEvalParamInt(p_roughness);
    int seed = AiShaderEvalParamInt(p_seed);
-   Input input = (Input) AiShaderEvalParamInt(p_input);
-   
-   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
    AtPoint P0, P1, P2;
    
@@ -73,7 +72,15 @@ shader_evaluate
    P2.y = P.y + y2;
    P2.z = P.z + z2;
    
-   sg->out.PNT.x = P.x + Fractal(P0, roughness, 1.0f, 0.5f, frequency, 2.0f, seed) * power;
-   sg->out.PNT.y = P.y + Fractal(P1, roughness, 1.0f, 0.5f, frequency, 2.0f, seed+1) * power;
-   sg->out.PNT.z = P.z + Fractal(P2, roughness, 1.0f, 0.5f, frequency, 2.0f, seed+2) * power;
+   fBm<PerlinNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
+   fbm.noise_params.quality = NQ_std;
+   
+   fbm.noise_params.seed = seed;
+   sg->out.PNT.x = P.x + power * fbm.eval(P0);
+   
+   fbm.noise_params.seed = seed + 1;
+   sg->out.PNT.y = P.y + power * fbm.eval(P1);
+   
+   fbm.noise_params.seed = seed + 2;
+   sg->out.PNT.z = P.z + power * fbm.eval(P2);
 }
