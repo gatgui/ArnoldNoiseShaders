@@ -22,6 +22,7 @@ const char* NoiseTypeNames[] =
    "value",
    "perlin",
    "simplex",
+   "flow",
    NULL
 };
 

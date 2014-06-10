@@ -32,7 +32,8 @@ enum NoiseType
 {
    NT_value = 0,
    NT_perlin,
-   NT_simplex
+   NT_simplex,
+   NT_flow
 };
 
 extern const char* NoiseTypeNames[];

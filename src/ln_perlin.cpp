@@ -14,6 +14,8 @@ enum PerlinParams
    p_lacunarity,
    p_seed,
    p_quality,
+   p_flow_power,
+   p_flow_time,
    p_normalize_output
 };
 
@@ -27,8 +29,13 @@ node_parameters
    AiParameterInt("octaves", 6);
    AiParameterFlt("persistence", 0.5f);
    AiParameterFlt("lacunarity", 2.0f);
+   // for value and perlin noise
    AiParameterInt("seed", 0);
    AiParameterEnum("quality", NQ_std, NoiseQualityNames);
+   // for flow noise
+   AiParameterFlt("flow_power", 0.25f);
+   AiParameterFlt("flow_time", 0.0f);
+   
    AiParameterBool("normalize_output", true);
    
    AiMetaDataSetBool(mds, "quality", "linkable", false);
@@ -76,6 +83,14 @@ shader_evaluate
          fBm<PerlinNoise, DefaultModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
          fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
          fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
+         sg->out.FLT = fbm.eval(P);
+      }
+      break;
+   case NT_flow:
+      {
+         fBm<FlowNoise, DefaultModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
+         fbm.noise_params.t = AiShaderEvalParamFlt(p_flow_time);
+         fbm.noise_params.power = AiShaderEvalParamFlt(p_flow_power);
          sg->out.FLT = fbm.eval(P);
       }
       break;
