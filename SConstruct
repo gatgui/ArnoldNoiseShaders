@@ -9,7 +9,7 @@ prjs = [
   {"name": "agNoises",
    "type": "dynamicmodule",
    "ext": arnold.PluginExt(),
-   "srcs": glob.glob("src/*.cpp") + glob.glob("src/libnoise/*.cpp"),
+   "srcs": glob.glob("src/*.cpp") + glob.glob("src/libnoise/*.cpp") + glob.glob("src/stegu/*.cpp"),
    "custom": [arnold.Require]
   }
 ]

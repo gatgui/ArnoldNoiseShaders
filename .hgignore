@@ -4,4 +4,4 @@ syntax: glob
 release/
 debug/
 .build/
-externals/*/
+.DS_Store
