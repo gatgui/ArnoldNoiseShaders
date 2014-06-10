@@ -140,7 +140,7 @@ shader_evaluate
    int y_base = int(floorf(P.y));
    int z_base = int(floorf(P.z));
    
-   AtPoint Pf[4];
+   AtPoint Pf[4] = {P, P, P, P};
    float f[4] = {2147483647.0f, 2147483647.0f, 2147483647.0f, 2147483647.0f};
    AtPoint P_cur;
    
