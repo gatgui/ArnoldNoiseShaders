@@ -10,6 +10,10 @@ enum VoronoiParams
    p_frequency,
    p_distance_func,
    p_output_mode,
+   p_weight1,
+   p_weight2,
+   p_weight3,
+   p_weight4,
    p_seed
 };
 
@@ -30,24 +34,28 @@ static const char *DistanceFuncNames[] =
 
 enum OutputMode
 {
-   OM_noise = 0,
-   OM_dist1,
-   OM_dist2,
-   OM_dist_add,
-   OM_dist_sub,
-   OM_dist_mul,
-   OM_dist_div
+   OM_constant = 0,
+   OM_f1,
+   OM_f2,
+   OM_f3,
+   OM_f4,
+   OM_add,
+   OM_sub,
+   OM_mul,
+   OM_weighted
 };
 
 static const char *OutputModeNames[] =
 {
-   "noise",
-   "dist1",
-   "dist2",
-   "dist_add",
-   "dist_sub",
-   "dist_mul",
-   "dist_div",
+   "constant",
+   "f1",
+   "f2",
+   "f3",
+   "f4",
+   "f1+f2",
+   "f2-f1",
+   "f1*f2",
+   "weighted",
    NULL
 };
 
@@ -74,7 +82,11 @@ node_parameters
    AiParameterFlt("displacement", 0.5f);
    AiParameterFlt("frequency", 1.0f);
    AiParameterEnum("distance_func", DF_euclidian, DistanceFuncNames);
-   AiParameterEnum("output_mode", OM_noise, OutputModeNames);
+   AiParameterEnum("output_mode", OM_constant, OutputModeNames);
+   AiParameterFlt("weight1", -1.0f);
+   AiParameterFlt("weight2", 1.0f);
+   AiParameterFlt("weight3", 0.0f);
+   AiParameterFlt("weight4", 0.0f);
    AiParameterInt("seed", 0);
    
    AiMetaDataSetBool(mds, "input", "linkable", false);
@@ -98,8 +110,9 @@ node_finish
 shader_evaluate
 {
    bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
-   
    Input input = (Input) AiShaderEvalParamInt(p_input);
+   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
+   
    float displacement = AiShaderEvalParamFlt(p_displacement);
    float frequency = AiShaderEvalParamFlt(p_frequency);
    DistanceFunc distance_func = (DistanceFunc) AiShaderEvalParamInt(p_distance_func);
@@ -121,19 +134,15 @@ shader_evaluate
       eval_dist = &EuclidianDistance;
    }
    
-   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
-   
    P *= frequency;
    
    int x_base = int(floorf(P.x));
    int y_base = int(floorf(P.y));
    int z_base = int(floorf(P.z));
    
-   AtPoint P_first = P;
-   AtPoint P_second = P;
+   AtPoint Pf[4] = {P, P, P, P};
+   float f[4] = {2147483647.0f, 2147483647.0f, 2147483647.0f, 2147483647.0f};
    AtPoint P_cur;
-   float first_dist = 2147483647.0f;
-   float second_dist = 2147483647.0f;
    
    // Inside each unit cube, there is a seed point at a random position.  Go
    // through each of the nearby cubes until we find a cube with a seed point
@@ -151,18 +160,43 @@ shader_evaluate
             
             float dist = eval_dist(P, P_cur);
 
-            if (dist < first_dist)
+            if (dist < f[0])
             {
-               second_dist = first_dist;
-               P_second = P_first;
+               Pf[3] = Pf[2];
+               f[3] = f[2];
                
-               first_dist = dist;
-               P_first = P_cur;
+               Pf[2] = Pf[1];
+               f[2] = f[1];
+               
+               Pf[1] = Pf[0];
+               f[1] = f[0];
+               
+               Pf[0] = P_cur;
+               f[0] = dist;
             }
-            else if (dist < second_dist)
+            else if (dist < f[1])
             {
-               second_dist = dist;
-               P_second = P_cur;
+               Pf[3] = Pf[2];
+               f[3] = f[2];
+               
+               Pf[2] = Pf[1];
+               f[2] = f[1];
+               
+               Pf[1] = P_cur;
+               f[1] = dist;
+            }
+            else if (dist < f[2])
+            {
+               Pf[3] = Pf[2];
+               f[3] = f[2];
+               
+               Pf[2] = P_cur;
+               f[2] = dist;
+            }
+            else if (dist < f[3])
+            {
+               Pf[3] = P_cur;
+               f[3] = dist;
             }
          }
       }
@@ -170,26 +204,38 @@ shader_evaluate
    
    switch (output_mode)
    {
-   case OM_noise:
-      sg->out.FLT = displacement * 0.5f * (1.0f + noise::ValueNoise3D(int(floorf(P_first.x)), int(floorf(P_first.y)), int(floorf(P_first.z))));
+   case OM_constant:
+      sg->out.FLT = displacement * 0.5f * (1.0f + noise::ValueNoise3D(int(floorf(Pf[0].x)), int(floorf(Pf[0].y)), int(floorf(Pf[0].z))));
       break;
-   case OM_dist1:
-      sg->out.FLT = displacement * first_dist;
+   case OM_f1:
+      sg->out.FLT = displacement * f[0];
       break;
-   case OM_dist2:
-      sg->out.FLT = displacement * second_dist;
+   case OM_f2:
+      sg->out.FLT = displacement * f[1];
       break;
-   case OM_dist_add:
-      sg->out.FLT = displacement * (second_dist + first_dist);
+   case OM_f3:
+      sg->out.FLT = displacement * f[2];
       break;
-   case OM_dist_sub:
-      sg->out.FLT = displacement * (second_dist - first_dist);
+   case OM_f4:
+      sg->out.FLT = displacement * f[3];
       break;
-   case OM_dist_mul:
-      sg->out.FLT = displacement * (first_dist * second_dist);
+   case OM_add:
+      sg->out.FLT = displacement * (f[0] + f[1]);
       break;
-   case OM_dist_div:
-      sg->out.FLT = displacement * (first_dist / second_dist);
+   case OM_sub:
+      sg->out.FLT = displacement * (f[1] - f[0]);
+      break;
+   case OM_mul:
+      sg->out.FLT = displacement * (f[0] * f[1]);
+      break;
+   case OM_weighted:
+      {
+         float w1 = AiShaderEvalParamFlt(p_weight1);
+         float w2 = AiShaderEvalParamFlt(p_weight2);
+         float w3 = AiShaderEvalParamFlt(p_weight3);
+         float w4 = AiShaderEvalParamFlt(p_weight4);
+         sg->out.FLT = displacement * (w1 * f[0] + w2 * f[1] + w3 * f[2] + w4 * f[3]);
+      }
       break;
    default:
       sg->out.FLT = 0.0f;
