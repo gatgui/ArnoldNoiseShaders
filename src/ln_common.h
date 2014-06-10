@@ -113,13 +113,7 @@ public:
       
       for (; ctx.octave<params.octaves; ctx.octave++)
       {
-         // Make sure that these floating-point values have the same range as a 32-
-         // bit integer so that we can pass them to the coherent-noise functions.
-         float nx = noise::MakeInt32Range(P.x);
-         float ny = noise::MakeInt32Range(P.y);
-         float nz = noise::MakeInt32Range(P.z);
-         
-         out += _modifier.apply(ctx, _noise.value(ctx, nx, ny, nz));
+         out += _modifier.apply(ctx, _noise.value(ctx, P.x, P.y, P.z));
          
          // Prepare the next octave.
          ctx.amplitude *= params.persistence;
@@ -142,6 +136,7 @@ struct ValueNoise
    struct Params
    {
       int seed;
+      NoiseQuality quality;
    };
    
    Params params;
@@ -153,8 +148,13 @@ struct ValueNoise
    
    inline float value(const fBmBase::Context &ctx, float x, float y, float z)
    {
+      // Make sure that these floating-point values have the same range as a 32-
+      // bit integer so that we can pass them to the coherent-noise functions.
+      float nx = noise::MakeInt32Range(x);
+      float ny = noise::MakeInt32Range(y);
+      float nz = noise::MakeInt32Range(z);
       params.seed = (params.seed + ctx.octave) & 0xFFFFFFFF;
-      return noise::ValueNoise3D(x, y, z, params.seed);
+      return noise::ValueCoherentNoise3D(nx, ny, nz, params.seed, (noise::NoiseQuality)params.quality);
    }
    
    inline void cleanup()
@@ -179,8 +179,13 @@ struct PerlinNoise
    
    inline float value(const fBmBase::Context &ctx, float x, float y, float z)
    {
+      // Make sure that these floating-point values have the same range as a 32-
+      // bit integer so that we can pass them to the coherent-noise functions.
+      float nx = noise::MakeInt32Range(x);
+      float ny = noise::MakeInt32Range(y);
+      float nz = noise::MakeInt32Range(z);
       params.seed = (params.seed + ctx.octave) & 0xFFFFFFFF;
-      return noise::GradientCoherentNoise3D(x, y, z, params.seed, (noise::NoiseQuality)params.quality);
+      return noise::GradientCoherentNoise3D(nx, ny, nz, params.seed, (noise::NoiseQuality)params.quality);
    }
    
    inline void cleanup()

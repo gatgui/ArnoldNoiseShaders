@@ -73,6 +73,7 @@ shader_evaluate
       {
          fBm<ValueNoise, RidgeModifier> fbm(octaves, amplitude, 1.0f, frequency, lacunarity);
          fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+         fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
          fbm.modifier_params.offset = offset;
          fbm.modifier_params.gain = gain;
          fbm.modifier_params.exponent = exponent;

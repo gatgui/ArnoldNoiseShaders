@@ -67,6 +67,7 @@ shader_evaluate
       {
          fBm<ValueNoise, AbsoluteModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
          fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+         fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
          fbm.modifier_params.remap_range = true;
          sg->out.FLT = fbm.eval(P);
       }

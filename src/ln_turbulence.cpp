@@ -81,6 +81,7 @@ shader_evaluate
       {
          int seed = AiShaderEvalParamInt(p_seed);
          fBm<ValueNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
+         fbm.noise_params.quality = NQ_std;
          fbm.noise_params.seed = seed + 0;
          sg->out.PNT.x = P.x + power * fbm.eval(P0);
          fbm.noise_params.seed = seed + 1;
