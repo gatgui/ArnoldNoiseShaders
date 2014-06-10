@@ -17,67 +17,13 @@ const char* InputNames[] =
    NULL
 };
 
-float Fractal(const AtPoint &inP, int octaves, float amplitude, float persistence, float frequency, float lacunarity, int seed, NoiseQuality quality)
+const char* NoiseBaseNames[] =
 {
-   float out = 0.0f;
-   
-   float curPersistence = amplitude;
-   float nx, ny, nz;
-   
-   AtPoint P = inP;
-   
-   P *= frequency;
-   
-   for (int curOctave=0; curOctave<octaves; ++curOctave)
-   {
-      // Make sure that these floating-point values have the same range as a 32-
-      // bit integer so that we can pass them to the coherent-noise functions.
-      nx = noise::MakeInt32Range(P.x);
-      ny = noise::MakeInt32Range(P.y);
-      nz = noise::MakeInt32Range(P.z);
-      
-      // Get the coherent-noise value from the input value and add it to the final result.
-      seed = (seed + curOctave) & 0xffffffff;
-      out += curPersistence * noise::GradientCoherentNoise3D(nx, ny, nz, seed, (noise::NoiseQuality)quality);
-      
-      // Prepare the next octave.
-      P *= lacunarity;
-      curPersistence *= persistence;
-   }
-   
-   return out;
-}
-
-float AbsFractal(const AtPoint &inP, int octaves, float amplitude, float persistence, float frequency, float lacunarity, int seed, NoiseQuality quality)
-{
-   float out = 0.0f;
-   
-   float curPersistence = amplitude;
-   float nx, ny, nz;
-   
-   AtPoint P = inP;
-   
-   P *= frequency;
-   
-   for (int curOctave=0; curOctave<octaves; ++curOctave)
-   {
-      // Make sure that these floating-point values have the same range as a 32-
-      // bit integer so that we can pass them to the coherent-noise functions.
-      nx = noise::MakeInt32Range(P.x);
-      ny = noise::MakeInt32Range(P.y);
-      nz = noise::MakeInt32Range(P.z);
-      
-      // Get the coherent-noise value from the input value and add it to the final result.
-      seed = (seed + curOctave) & 0xffffffff;
-      out += curPersistence * (2.0f * fabsf(noise::GradientCoherentNoise3D(nx, ny, nz, seed, (noise::NoiseQuality)quality)) - 1.0f);
-      
-      // Prepare the next octave.
-      P *= lacunarity;
-      curPersistence *= persistence;
-   }
-   
-   return out + 0.5f;
-}    
+   "value",
+   "perlin",
+   "simplex",
+   NULL
+};
 
 AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *node)
 {
