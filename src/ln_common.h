@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "libnoise/noisegen.h"
 #include "stegu/simplexnoise1234.h"
+#include "stegu/srdnoise23.h"
 
 enum NoiseQuality
 {
@@ -139,11 +140,11 @@ struct ValueNoise
       NoiseQuality quality;
    };
    
-   Params params;
+   Params _params;
    
    inline void prepare(const fBmBase::Params &, const Params &inParams)
    {
-      params = inParams;
+      _params = inParams;
    }
    
    inline float value(const fBmBase::Context &ctx, float x, float y, float z)
@@ -153,8 +154,8 @@ struct ValueNoise
       float nx = noise::MakeInt32Range(x);
       float ny = noise::MakeInt32Range(y);
       float nz = noise::MakeInt32Range(z);
-      params.seed = (params.seed + ctx.octave) & 0xFFFFFFFF;
-      return noise::ValueCoherentNoise3D(nx, ny, nz, params.seed, (noise::NoiseQuality)params.quality);
+      _params.seed = (_params.seed + ctx.octave) & 0xFFFFFFFF;
+      return noise::ValueCoherentNoise3D(nx, ny, nz, _params.seed, (noise::NoiseQuality)_params.quality);
    }
    
    inline void cleanup()
@@ -170,11 +171,11 @@ struct PerlinNoise
       NoiseQuality quality;
    };
    
-   Params params;
+   Params _params;
    
    inline void prepare(const fBmBase::Params &, const Params &inParams)
    {
-      params = inParams;
+      _params = inParams;
    }
    
    inline float value(const fBmBase::Context &ctx, float x, float y, float z)
@@ -184,8 +185,8 @@ struct PerlinNoise
       float nx = noise::MakeInt32Range(x);
       float ny = noise::MakeInt32Range(y);
       float nz = noise::MakeInt32Range(z);
-      params.seed = (params.seed + ctx.octave) & 0xFFFFFFFF;
-      return noise::GradientCoherentNoise3D(nx, ny, nz, params.seed, (noise::NoiseQuality)params.quality);
+      _params.seed = (_params.seed + ctx.octave) & 0xFFFFFFFF;
+      return noise::GradientCoherentNoise3D(nx, ny, nz, _params.seed, (noise::NoiseQuality)_params.quality);
    }
    
    inline void cleanup()
@@ -199,7 +200,7 @@ struct SimplexNoise
    {
    };
    
-   Params params;
+   Params _params;
    
    inline void prepare(const fBmBase::Params &, const Params &)
    {
@@ -208,6 +209,54 @@ struct SimplexNoise
    inline float value(const fBmBase::Context &, float x, float y, float z)
    {
       return SimplexNoise1234::noise(x, y, z);
+   }
+   
+   inline void cleanup()
+   {
+   }
+};
+
+struct FlowNoise
+{
+   struct Params
+   {
+      float t;
+      float power;
+   };
+   
+   Params _params;
+   float _dx;
+   float _dy;
+   float _dz;
+   float _power;
+   float _persistence;
+   
+   inline void prepare(const fBmBase::Params &fbmparams, const Params &params)
+   {
+      _params = params;
+      _power = params.power;
+      _persistence = fbmparams.persistence;
+      _dx = 0.0f;
+      _dy = 0.0f;
+      _dz = 0.0f;
+   }
+   
+   inline float value(const fBmBase::Context &ctx, float x, float y, float z)
+   {
+      // the new derivatives
+      float dx = 0.0f;
+      float dy = 0.0f;
+      float dz = 0.0f;
+      
+      float rv = srdnoise3(x+_dx, y+_dy, z+_dz, _params.t, &dx, &dy, &dz);
+      
+      // update derivatives
+      _dx += _power * dx;
+      _dy += _power * dy;
+      _dz += _power * dz;
+      _power *= _persistence;
+      
+      return rv;
    }
    
    inline void cleanup()
