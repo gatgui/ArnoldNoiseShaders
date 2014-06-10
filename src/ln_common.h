@@ -4,6 +4,7 @@
 #include <ai.h>
 #include <algorithm>
 #include "libnoise/noisegen.h"
+#include "stegu/simplexnoise1234.h"
 
 enum NoiseQuality
 {
@@ -177,9 +178,33 @@ struct PerlinNoise
    }
 };
 
+struct SimplexNoise
+{
+   struct Params
+   {
+   };
+   
+   Params params;
+   
+   inline void prepare(const fBmBase::Params &, const Params &)
+   {
+   }
+   
+   inline float value(const fBmBase::Context &, float x, float y, float z)
+   {
+      return SimplexNoise1234::noise(x, y, z);
+   }
+   
+   inline void cleanup()
+   {
+   }
+};
+
 struct DefaultModifier
 {
-   typedef void* Params;
+   struct Params
+   {
+   };
    
    inline void prepare(const fBmBase::Params &, const Params &)
    {
