@@ -51,7 +51,10 @@ node_finish
 shader_evaluate
 {
    bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
+   Input input = (Input) AiShaderEvalParamInt(p_input);
+   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
+   #if 0
    float amplitude = AiShaderEvalParamFlt(p_amplitude);
    float frequency = AiShaderEvalParamFlt(p_frequency);
    float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
@@ -61,19 +64,7 @@ shader_evaluate
    int octaves = AiShaderEvalParamInt(p_octaves);
    NoiseQuality quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
    int seed = AiShaderEvalParamInt(p_seed);
-   Input input = (Input) AiShaderEvalParamInt(p_input);
    
-   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
-   
-   fBm<PerlinGenerator, RidgeModifier> generator(octaves, amplitude, 1.0f, frequency, lacunarity, seed, quality);
-   
-   generator.extra_params().offset = offset;
-   generator.extra_params().gain = gain;
-   generator.extra_params().exponent = exponent;
-   
-   sg->out.FLT = generator.eval(P);
-   
-   /*
    P *= frequency;
    
    sg->out.FLT = 0.0f;
@@ -110,7 +101,22 @@ shader_evaluate
    }
    
    sg->out.FLT = 1.25f * sg->out.FLT - 1.0f;
-   */
+   #else
+   fBm<PerlinNoise, RidgeModifier> fbm(AiShaderEvalParamInt(p_octaves),
+                                       AiShaderEvalParamFlt(p_amplitude),
+                                       1.0f,
+                                       AiShaderEvalParamFlt(p_frequency),
+                                       AiShaderEvalParamFlt(p_lacunarity));
+   
+   fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+   fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
+   
+   fbm.modifier_params.offset = AiShaderEvalParamFlt(p_offset);
+   fbm.modifier_params.gain = AiShaderEvalParamFlt(p_gain);
+   fbm.modifier_params.exponent = AiShaderEvalParamFlt(p_exponent);
+   
+   sg->out.FLT = fbm.eval(P);
+   #endif
    
    sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
 }

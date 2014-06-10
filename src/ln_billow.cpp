@@ -47,7 +47,10 @@ node_finish
 shader_evaluate
 {
    bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
+   Input input = (Input) AiShaderEvalParamInt(p_input);
+   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
+   #if 0
    float amplitude = AiShaderEvalParamFlt(p_amplitude);
    float frequency = AiShaderEvalParamFlt(p_frequency);
    float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
@@ -55,13 +58,22 @@ shader_evaluate
    float persistence = AiShaderEvalParamFlt(p_persistence);
    NoiseQuality quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
    int seed = AiShaderEvalParamInt(p_seed);
-   Input input = (Input) AiShaderEvalParamInt(p_input);
    
-   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
+   sg->out.FLT = AbsFractal(P, octaves, amplitude, persistence, frequency, lacunarity, seed, quality);
+   #else
+   fBm<PerlinNoise, AbsoluteModifier> fbm(AiShaderEvalParamInt(p_octaves),
+                                          AiShaderEvalParamFlt(p_amplitude),
+                                          AiShaderEvalParamFlt(p_persistence),
+                                          AiShaderEvalParamFlt(p_frequency),
+                                          AiShaderEvalParamFlt(p_lacunarity));
    
-   //sg->out.FLT = AbsFractal(P, octaves, amplitude, persistence, frequency, lacunarity, seed, quality);
-   fBm<PerlinGenerator, AbsoluteModifier> generator(amplitude, persistence, frequency, lacunarity, seed, quality);
-   sg->out.FLT = generator.eval(P);
+   fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+   fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
+   
+   fbm.modifier_params.remap_range = true;
+   
+   sg->out.FLT = fbm.eval(P);
+   #endif
    
    sg->out.FLT = std::max(0.0f, 0.5f * (1.0f + sg->out.FLT));
 }
