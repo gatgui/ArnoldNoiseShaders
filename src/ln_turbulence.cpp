@@ -6,6 +6,7 @@ enum TurbulenceParams
 {
    p_input = 0,
    p_custom_input,
+   p_base_noise,
    p_frequency,
    p_power,
    p_roughness,
@@ -16,12 +17,14 @@ node_parameters
 {
    AiParameterEnum("input", I_P, InputNames);
    AiParameterPnt("custom_input", 0.0f, 0.0f, 0.0f);
+   AiParameterEnum("base_noise", NT_simplex, NoiseTypeNames);
    AiParameterFlt("frequency", 1.0f);
    AiParameterFlt("power", 1.0f);
    AiParameterInt("roughness", 3);
    AiParameterInt("seed", 0);
    
    AiMetaDataSetBool(mds, "input", "linkable", false);
+   AiMetaDataSetBool(mds, "base_noise", "linkable", false);
 }
 
 node_initialize
@@ -53,10 +56,10 @@ shader_evaluate
    Input input = (Input) AiShaderEvalParamInt(p_input);
    AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
    
+   NoiseType nt = (NoiseType) AiShaderEvalParamInt(p_base_noise);
    float frequency = AiShaderEvalParamFlt(p_frequency);
    float power = AiShaderEvalParamFlt(p_power);
    int roughness = AiShaderEvalParamInt(p_roughness);
-   int seed = AiShaderEvalParamInt(p_seed);
    
    AtPoint P0, P1, P2;
    
@@ -72,15 +75,41 @@ shader_evaluate
    P2.y = P.y + y2;
    P2.z = P.z + z2;
    
-   fBm<PerlinNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
-   fbm.noise_params.quality = NQ_std;
-   
-   fbm.noise_params.seed = seed;
-   sg->out.PNT.x = P.x + power * fbm.eval(P0);
-   
-   fbm.noise_params.seed = seed + 1;
-   sg->out.PNT.y = P.y + power * fbm.eval(P1);
-   
-   fbm.noise_params.seed = seed + 2;
-   sg->out.PNT.z = P.z + power * fbm.eval(P2);
+   switch (nt)
+   {
+   case NT_value:
+      {
+         int seed = AiShaderEvalParamInt(p_seed);
+         fBm<ValueNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
+         fbm.noise_params.seed = seed + 0;
+         sg->out.PNT.x = P.x + power * fbm.eval(P0);
+         fbm.noise_params.seed = seed + 1;
+         sg->out.PNT.y = P.y + power * fbm.eval(P1);
+         fbm.noise_params.seed = seed + 2;
+         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+      }
+      break;
+   case NT_perlin:
+      {
+         int seed = AiShaderEvalParamInt(p_seed);
+         fBm<PerlinNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
+         fbm.noise_params.quality = NQ_std;
+         fbm.noise_params.seed = seed + 0;
+         sg->out.PNT.x = P.x + power * fbm.eval(P0);
+         fbm.noise_params.seed = seed + 1;
+         sg->out.PNT.y = P.y + power * fbm.eval(P1);
+         fbm.noise_params.seed = seed + 2;
+         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+      }
+      break;
+   case NT_simplex:
+   default:
+      {
+         fBm<SimplexNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
+         sg->out.PNT.x = P.x + power * fbm.eval(P0);
+         sg->out.PNT.y = P.y + power * fbm.eval(P1);
+         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+      }
+      break;
+   }
 }

@@ -6,6 +6,7 @@ enum RidgedParams
 {
    p_input = 0,
    p_custom_input,
+   p_base_noise,
    p_amplitude,
    p_frequency,
    p_octaves,
@@ -22,6 +23,7 @@ node_parameters
 {
    AiParameterEnum("input", I_P, InputNames);
    AiParameterPnt("custom_input", 0.0f, 0.0f, 0.0f);
+   AiParameterEnum("base_noise", NT_simplex, NoiseTypeNames);
    AiParameterFlt("amplitude", 1.0f);
    AiParameterFlt("frequency", 1.0f);
    AiParameterInt("octaves", 6);
@@ -35,6 +37,7 @@ node_parameters
    
    AiMetaDataSetBool(mds, "quality", "linkable", false);
    AiMetaDataSetBool(mds, "input", "linkable", false);
+   AiMetaDataSetBool(mds, "base_noise", "linkable", false);
 }
 
 node_initialize
@@ -55,21 +58,48 @@ shader_evaluate
    bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
    Input input = (Input) AiShaderEvalParamInt(p_input);
    AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
+   NoiseType nt = (NoiseType) AiShaderEvalParamInt(p_base_noise);
+   int octaves = AiShaderEvalParamInt(p_octaves);
+   float amplitude = AiShaderEvalParamFlt(p_amplitude);
+   float frequency = AiShaderEvalParamFlt(p_frequency);
+   float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
+   float offset = AiShaderEvalParamFlt(p_offset);
+   float gain = AiShaderEvalParamFlt(p_gain);
+   float exponent = AiShaderEvalParamFlt(p_exponent);
    
-   fBm<PerlinNoise, RidgeModifier> fbm(AiShaderEvalParamInt(p_octaves),
-                                       AiShaderEvalParamFlt(p_amplitude),
-                                       1.0f,
-                                       AiShaderEvalParamFlt(p_frequency),
-                                       AiShaderEvalParamFlt(p_lacunarity));
-   
-   fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
-   fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
-   
-   fbm.modifier_params.offset = AiShaderEvalParamFlt(p_offset);
-   fbm.modifier_params.gain = AiShaderEvalParamFlt(p_gain);
-   fbm.modifier_params.exponent = AiShaderEvalParamFlt(p_exponent);
-   
-   sg->out.FLT = fbm.eval(P);
+   switch (nt)
+   {
+   case NT_value:
+      {
+         fBm<ValueNoise, RidgeModifier> fbm(octaves, amplitude, 1.0f, frequency, lacunarity);
+         fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+         fbm.modifier_params.offset = offset;
+         fbm.modifier_params.gain = gain;
+         fbm.modifier_params.exponent = exponent;
+         sg->out.FLT = fbm.eval(P);
+      }
+      break;
+   case NT_perlin:
+      {
+         fBm<PerlinNoise, RidgeModifier> fbm(octaves, amplitude, 1.0f, frequency, lacunarity);
+         fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+         fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
+         fbm.modifier_params.offset = offset;
+         fbm.modifier_params.gain = gain;
+         fbm.modifier_params.exponent = exponent;
+         sg->out.FLT = fbm.eval(P);
+      }
+      break;
+   case NT_simplex:
+   default:
+      {
+         fBm<SimplexNoise, RidgeModifier> fbm(octaves, amplitude, 1.0f, frequency, lacunarity);
+         fbm.modifier_params.offset = offset;
+         fbm.modifier_params.gain = gain;
+         fbm.modifier_params.exponent = exponent;
+         sg->out.FLT = fbm.eval(P);
+      }
+   }
    
    if (AiShaderEvalParamBool(p_normalize_output))
    {

@@ -17,7 +17,7 @@ const char* InputNames[] =
    NULL
 };
 
-const char* NoiseBaseNames[] =
+const char* NoiseTypeNames[] =
 {
    "value",
    "perlin",

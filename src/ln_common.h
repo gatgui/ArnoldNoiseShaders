@@ -27,14 +27,14 @@ enum Input
 extern const char* InputNames[];
 
 
-enum NoiseBase
+enum NoiseType
 {
-   NB_value = 0,
-   NB_perlin,
-   NB_simplex
+   NT_value = 0,
+   NT_perlin,
+   NT_simplex
 };
 
-extern const char* NoiseBaseNames[];
+extern const char* NoiseTypeNames[];
 
 
 AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *node);

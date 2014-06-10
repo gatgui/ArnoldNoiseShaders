@@ -6,6 +6,7 @@ enum PerlinParams
 {
    p_input = 0,
    p_custom_input,
+   p_base_noise,
    p_amplitude,
    p_frequency,
    p_octaves,
@@ -20,6 +21,7 @@ node_parameters
 {
    AiParameterEnum("input", I_P, InputNames);
    AiParameterPnt("custom_input", 0.0f, 0.0f, 0.0f);
+   AiParameterEnum("base_noise", NT_simplex, NoiseTypeNames);
    AiParameterFlt("amplitude", 1.0f);
    AiParameterFlt("frequency", 1.0f);
    AiParameterInt("octaves", 6);
@@ -31,6 +33,7 @@ node_parameters
    
    AiMetaDataSetBool(mds, "quality", "linkable", false);
    AiMetaDataSetBool(mds, "input", "linkable", false);
+   AiMetaDataSetBool(mds, "base_noise", "linkable", false);
 }
 
 node_initialize
@@ -51,17 +54,37 @@ shader_evaluate
    bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
    Input input = (Input) AiShaderEvalParamInt(p_input);
    AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
+   NoiseType nt = (NoiseType) AiShaderEvalParamInt(p_base_noise);
+   int octaves = AiShaderEvalParamInt(p_octaves);
+   float amplitude = AiShaderEvalParamFlt(p_amplitude);
+   float persistence = AiShaderEvalParamFlt(p_persistence);
+   float frequency = AiShaderEvalParamFlt(p_frequency);
+   float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
    
-   fBm<PerlinNoise, DefaultModifier> fbm(AiShaderEvalParamInt(p_octaves),
-                                         AiShaderEvalParamFlt(p_amplitude),
-                                         AiShaderEvalParamFlt(p_persistence),
-                                         AiShaderEvalParamFlt(p_frequency),
-                                         AiShaderEvalParamFlt(p_lacunarity));
-   
-   fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
-   fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
-   
-   sg->out.FLT = fbm.eval(P);
+   switch (nt)
+   {
+   case NT_value:
+      {
+         fBm<ValueNoise, DefaultModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
+         fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+         sg->out.FLT = fbm.eval(P);
+      }
+      break;
+   case NT_perlin:
+      {
+         fBm<PerlinNoise, DefaultModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
+         fbm.noise_params.seed = AiShaderEvalParamInt(p_seed);
+         fbm.noise_params.quality = (NoiseQuality) AiShaderEvalParamInt(p_quality);
+         sg->out.FLT = fbm.eval(P);
+      }
+      break;
+   case NT_simplex:
+   default:
+      {
+         fBm<SimplexNoise, DefaultModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
+         sg->out.FLT = fbm.eval(P);
+      }
+   }
    
    if (AiShaderEvalParamBool(p_normalize_output))
    {
