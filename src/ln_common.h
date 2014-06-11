@@ -115,7 +115,8 @@ public:
       
       for (; ctx.octave<params.octaves; ctx.octave++)
       {
-         out += _modifier.apply(ctx, _noise.value(ctx, P.x, P.y, P.z));
+         //out += _modifier.apply(ctx, _noise.value(ctx, P.x, P.y, P.z));
+         out += ctx.amplitude * _modifier.apply(ctx, _noise.value(ctx, P.x, P.y, P.z));
          
          // Prepare the next octave.
          ctx.amplitude *= params.persistence;
@@ -142,6 +143,12 @@ struct ValueNoise
    };
    
    Params _params;
+   
+   inline ValueNoise()
+   {
+      _params.seed = 0;
+      _params.quality = NQ_std;
+   }
    
    inline void prepare(const fBmBase::Params &, const Params &inParams)
    {
@@ -173,6 +180,12 @@ struct PerlinNoise
    };
    
    Params _params;
+   
+   inline PerlinNoise()
+   {
+      _params.seed = 0;
+      _params.quality = NQ_std;
+   }
    
    inline void prepare(const fBmBase::Params &, const Params &inParams)
    {
@@ -232,6 +245,13 @@ struct FlowNoise
    float _power;
    float _persistence;
    
+   inline FlowNoise()
+      : _dx(0.0f), _dy(0.0f), _dz(0.0f), _power(0.0f), _persistence(1.0f)
+   {
+      _params.t = 0.0f;
+      _params.power = 0.25f;
+   }
+   
    inline void prepare(const fBmBase::Params &fbmparams, const Params &params)
    {
       _params = params;
@@ -242,7 +262,7 @@ struct FlowNoise
       _dz = 0.0f;
    }
    
-   inline float value(const fBmBase::Context &ctx, float x, float y, float z)
+   inline float value(const fBmBase::Context &, float x, float y, float z)
    {
       // the new derivatives
       float dx = 0.0f;
@@ -265,6 +285,41 @@ struct FlowNoise
    }
 };
 
+template <typename M1, typename M2>
+struct CombineModifier
+{
+   struct Params
+   {
+      typename M1::Params mod1;
+      typename M2::Params mod2;
+   };
+   
+   M1 _mod1;
+   M2 _mod2;
+   
+   inline void prepare(const fBmBase::Params &fbmparams, const Params &params)
+   {
+      _mod1.prepare(fbmparams, params.mod1);
+      _mod2.prepare(fbmparams, params.mod2);
+   }
+   
+   inline float apply(const fBmBase::Context &ctx, float noise_value) const
+   {
+      //return _mod2.apply(ctx, _mod1.apply(ctx, noise_value));
+      // Adjust directly output from mod1
+      return _mod2.apply(ctx, _mod1.adjust(_mod1.apply(ctx, noise_value)));
+   }
+   
+   inline float adjust(float noise_value) const
+   {
+      return _mod2.adjust(noise_value);
+   }
+   
+   inline void cleanup()
+   {
+   }
+};
+
 struct DefaultModifier
 {
    struct Params
@@ -275,9 +330,9 @@ struct DefaultModifier
    {
    }
    
-   inline float apply(const fBmBase::Context &ctx, float noise_value) const
+   inline float apply(const fBmBase::Context &, float noise_value) const
    {
-      return ctx.amplitude * noise_value;
+      return noise_value;
    }
    
    inline float adjust(float noise_value) const
@@ -294,7 +349,8 @@ struct AbsoluteModifier
 {
    struct Params
    {
-      bool remap_range;
+      float offset;
+      float scale;
    };
    
    Params _params;
@@ -304,15 +360,14 @@ struct AbsoluteModifier
       _params = params;
    }
    
-   inline float apply(const fBmBase::Context &ctx, float noise_value) const
+   inline float apply(const fBmBase::Context &, float noise_value) const
    {
-      float out_value = fabsf(noise_value);
-      return ctx.amplitude * (_params.remap_range ? (2.0f * out_value - 1.0f) : out_value);
+      return (_params.scale * (_params.offset + fabsf(noise_value)));
    }
    
    inline float adjust(float noise_value) const
    {
-      return (_params.remap_range ? noise_value + 0.5f : noise_value);
+      return (noise_value - _params.offset);
    }
    
    inline void cleanup()
@@ -330,25 +385,22 @@ struct RidgeModifier
    };
    
    Params _params;
-   float _base_amplitude;
    mutable float _weight;
    
    inline RidgeModifier()
-      : _base_amplitude(0.0f), _weight(1.0f)
+      : _weight(1.0f)
    {
    }
    
-   void prepare(const fBmBase::Params &fbmParams, const Params &params)
+   void prepare(const fBmBase::Params &, const Params &params)
    {
       _params = params;
-      _base_amplitude = fbmParams.amplitude;
       _weight = 1.0f;
    }
    
    float apply(const fBmBase::Context &ctx, float noise_value) const
    {
-      // Do not use incoming amplitude as it will change with octaves because of persistence
-      float s = _params.offset - _base_amplitude * fabsf(noise_value);
+      float s = _params.offset - noise_value;
       
       s *= s * _weight;
       
@@ -361,8 +413,7 @@ struct RidgeModifier
    
    inline float adjust(float noise_value) const
    {
-      return 1.25f * noise_value - 1.0f;
-      //return noise_value;
+      return (noise_value - _params.offset);
    }
    
    inline void cleanup()

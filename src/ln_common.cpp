@@ -26,7 +26,7 @@ const char* NoiseTypeNames[] =
    NULL
 };
 
-AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *node)
+AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *)
 {
    AtPoint P;
    
