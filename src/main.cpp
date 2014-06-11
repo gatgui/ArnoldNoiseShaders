@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 
-extern AtNodeMethods *TurbulenceMtd;
+extern AtNodeMethods *DistortPointMtd;
 extern AtNodeMethods *VoronoiMtd;
 extern AtNodeMethods *FractalMtd;
 
@@ -19,10 +19,10 @@ node_loader
       strcpy(node->version, AI_VERSION);
       return true;
    case 1:
-      node->name = "ln_turbulence";
+      node->name = "ln_distort_point";
       node->node_type = AI_NODE_SHADER;
       node->output_type = AI_TYPE_POINT;
-      node->methods = TurbulenceMtd;
+      node->methods = DistortPointMtd;
       strcpy(node->version, AI_VERSION);
       return true;
    case 2:

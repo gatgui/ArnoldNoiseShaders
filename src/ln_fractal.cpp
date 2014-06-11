@@ -146,7 +146,7 @@ float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
       float output_max = AiShaderEvalParamFlt(p_output_max);
       // [-1, 1] -> [output_min, output_max]
       
-      out = output_min + (output_max - output_min) * CLAMP(0.5f * (out + 1.0f), 0.0f, 1.0f);
+      out = CLAMP(output_min + 0.5f * (out + 1.0f) * (output_max - output_min), output_min, output_max);
       //out = std::max(0.0f, 0.5f * (1.0f + out));
    }
    
@@ -195,12 +195,16 @@ node_parameters
    AiMetaDataSetFlt(mds, "persistence", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "lacunarity", "min", 0.0f);
    AiMetaDataSetFlt(mds, "lacunarity", "softmax", 5.0f);
-   AiMetaDataSetInt(mds, "perlin_seed", "softmin", 0);
-   AiMetaDataSetInt(mds, "perlin_seed", "softmax", 10);
-   AiMetaDataSetBool(mds, "perlin_quality", "linkable", false);
    AiMetaDataSetInt(mds, "value_seed", "softmin", 0);
    AiMetaDataSetInt(mds, "value_seed", "softmax", 10);
    AiMetaDataSetBool(mds, "value_quality", "linkable", false);
+   AiMetaDataSetInt(mds, "perlin_seed", "softmin", 0);
+   AiMetaDataSetInt(mds, "perlin_seed", "softmax", 10);
+   AiMetaDataSetBool(mds, "perlin_quality", "linkable", false);
+   AiMetaDataSetFlt(mds, "flow_power", "softmin", 0.0f);
+   AiMetaDataSetFlt(mds, "flow_power", "softmax", 1.0f);
+   AiMetaDataSetFlt(mds, "flow_time", "softmin", 0.0f);
+   AiMetaDataSetFlt(mds, "flow_time", "softmax", 10.0f);
    AiMetaDataSetBool(mds, "turbulent", "linkable", false);
    AiMetaDataSetFlt(mds, "turbulence_offset", "softmin", -1.0f);
    AiMetaDataSetFlt(mds, "turbulence_offset", "softmax", 1.0f);
