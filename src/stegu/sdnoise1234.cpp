@@ -47,7 +47,7 @@
  * Permutation table. This is just a random jumble of all numbers 0-255,
  * repeated twice to avoid wrapping the index at 255 for each lookup.
  */
-unsigned char perm[512] = {151,160,137,91,90,15,
+static unsigned char perm[512] = {151,160,137,91,90,15,
   131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
   190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
   88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
@@ -139,6 +139,7 @@ float grad1( int hash, float *gx ) {
     int h = hash & 15;
     *gx = 1.0f + (h & 7);   // Gradient value is one of 1.0, 2.0, ..., 8.0
     if (h&8) *gx = - *gx;   // Make half of the gradients negative
+    return *gx;
 }
 
 void grad2( int hash, float *gx, float *gy ) {
