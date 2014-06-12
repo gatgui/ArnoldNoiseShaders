@@ -105,11 +105,11 @@ shader_evaluate
          fBm<ValueNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
          fbm.noise_params.quality = NQ_std;
          fbm.noise_params.seed = seed + 0;
-         sg->out.PNT.x = P.x + power * fbm.eval(P0);
+         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
          fbm.noise_params.seed = seed + 1;
-         sg->out.PNT.y = P.y + power * fbm.eval(P1);
+         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
          fbm.noise_params.seed = seed + 2;
-         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
       }
       break;
    case NT_perlin:
@@ -118,11 +118,11 @@ shader_evaluate
          fBm<PerlinNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
          fbm.noise_params.quality = NQ_std;
          fbm.noise_params.seed = seed + 0;
-         sg->out.PNT.x = P.x + power * fbm.eval(P0);
+         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
          fbm.noise_params.seed = seed + 1;
-         sg->out.PNT.y = P.y + power * fbm.eval(P1);
+         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
          fbm.noise_params.seed = seed + 2;
-         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
       }
       break;
    case NT_flow:
@@ -130,18 +130,18 @@ shader_evaluate
          fBm<FlowNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
          fbm.noise_params.power = AiShaderEvalParamFlt(p_flow_power);
          fbm.noise_params.t = AiShaderEvalParamFlt(p_flow_time);
-         sg->out.PNT.x = P.x + power * fbm.eval(P0);
-         sg->out.PNT.y = P.y + power * fbm.eval(P1);
-         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
+         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
+         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
       }
       break;
    case NT_simplex:
    default:
       {
          fBm<SimplexNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
-         sg->out.PNT.x = P.x + power * fbm.eval(P0);
-         sg->out.PNT.y = P.y + power * fbm.eval(P1);
-         sg->out.PNT.z = P.z + power * fbm.eval(P2);
+         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
+         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
+         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
       }
       break;
    }

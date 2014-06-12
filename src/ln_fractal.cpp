@@ -36,9 +36,14 @@ enum FractalParams
    p_ridge_gain,
    p_ridge_exponent,
    
+   p_dampen_output,
+   
    p_remap_output,
+   p_fractal_min,
+   p_fractal_max,
    p_output_min,
-   p_output_max
+   p_output_max,
+   p_clamp_output
 };
 
 template <typename TNoise, typename TModifier>
@@ -69,7 +74,7 @@ void SetupModifier(AtNode *, AtShaderGlobals *, fBm<TNoise, TModifier> &)
 {
 }
 template <typename TNoise>
-void SetupModifier(AtNode *node, AtShaderGlobals *sg, fBm<TNoise, AbsoluteModifier> &fbm)
+void SetupModifier(AtNode *node, AtShaderGlobals *sg, fBm<TNoise, TurbulenceModifier> &fbm)
 {
    fbm.modifier_params.offset = AiShaderEvalParamFlt(p_turbulence_offset);
    fbm.modifier_params.scale = AiShaderEvalParamFlt(p_turbulence_scale);
@@ -82,7 +87,7 @@ void SetupModifier(AtNode *node, AtShaderGlobals *sg, fBm<TNoise, RidgeModifier>
    fbm.modifier_params.exponent = AiShaderEvalParamFlt(p_ridge_exponent);
 }
 template <typename TNoise>
-void SetupModifier(AtNode *node, AtShaderGlobals *sg, fBm<TNoise, CombineModifier<AbsoluteModifier, RidgeModifier> > &fbm)
+void SetupModifier(AtNode *node, AtShaderGlobals *sg, fBm<TNoise, CombineModifier<TurbulenceModifier, RidgeModifier> > &fbm)
 {
    fbm.modifier_params.mod1.offset = AiShaderEvalParamFlt(p_turbulence_offset);
    fbm.modifier_params.mod1.scale = AiShaderEvalParamFlt(p_turbulence_scale);
@@ -101,6 +106,7 @@ float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
    float lacunarity = AiShaderEvalParamFlt(p_lacunarity);
    bool turbulent = AiShaderEvalParamBool(p_turbulent);
    bool ridged = AiShaderEvalParamBool(p_ridged);
+   bool damp = AiShaderEvalParamBool(p_dampen_output);
    bool remap_output = AiShaderEvalParamBool(p_remap_output);
    
    float out = 0.0f;
@@ -109,17 +115,17 @@ float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
    {
       if (ridged)
       {
-         fBm<TNoise, CombineModifier<AbsoluteModifier, RidgeModifier> > fbm(octaves, amplitude, persistence, frequency, lacunarity);
+         fBm<TNoise, CombineModifier<TurbulenceModifier, RidgeModifier> > fbm(octaves, amplitude, persistence, frequency, lacunarity);
          SetupNoise(node, sg, fbm);
          SetupModifier(node, sg, fbm);
-         out = fbm.eval(P);
+         out = fbm.eval(P, damp);
       }
       else
       {
-         fBm<TNoise, AbsoluteModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
+         fBm<TNoise, TurbulenceModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
          SetupNoise(node, sg, fbm);
          SetupModifier(node, sg, fbm);
-         out = fbm.eval(P);
+         out = fbm.eval(P, damp);
       }
    }
    else
@@ -129,25 +135,31 @@ float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
          fBm<TNoise, RidgeModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
          SetupNoise(node, sg, fbm);
          SetupModifier(node, sg, fbm);
-         out = fbm.eval(P);
+         out = fbm.eval(P, damp);
       }
       else
       {
          fBm<TNoise, DefaultModifier> fbm(octaves, amplitude, persistence, frequency, lacunarity);
          SetupNoise(node, sg, fbm);
          SetupModifier(node, sg, fbm);
-         out = fbm.eval(P);
+         out = fbm.eval(P, damp);
       }
    }
    
    if (remap_output)
    {
+      float fractal_min = AiShaderEvalParamFlt(p_fractal_min);
+      float fractal_max = AiShaderEvalParamFlt(p_fractal_max);
       float output_min = AiShaderEvalParamFlt(p_output_min);
       float output_max = AiShaderEvalParamFlt(p_output_max);
-      // [-1, 1] -> [output_min, output_max]
+      bool clamp_output = AiShaderEvalParamBool(p_clamp_output);
       
-      out = CLAMP(output_min + 0.5f * (out + 1.0f) * (output_max - output_min), output_min, output_max);
-      //out = std::max(0.0f, 0.5f * (1.0f + out));
+      out = output_min + (output_max - output_min) * (out - fractal_min) / (fractal_max - fractal_min);
+      
+      if (clamp_output)
+      {
+         out = CLAMP(out, output_min, output_max);
+      }
    }
    
    return out;
@@ -177,9 +189,13 @@ node_parameters
    AiParameterFlt("ridge_offset", 1.0f);
    AiParameterFlt("ridge_gain", 2.0f);
    AiParameterFlt("ridge_exponent", 0.0f);
+   AiParameterBool("dampen_output", true);
    AiParameterBool("remap_output", true);
+   AiParameterFlt("fractal_min", -1.0f);
+   AiParameterFlt("fractal_max", 1.0f);
    AiParameterFlt("output_min", 0.0f);
    AiParameterFlt("output_max", 1.0f);
+   AiParameterBool("clamp_output", true);
    
    // Common metadata
    AiMetaDataSetStr(mds, NULL, "desc", "Fractal Noise");
@@ -205,19 +221,20 @@ node_parameters
    AiMetaDataSetFlt(mds, "flow_power", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "flow_time", "softmin", 0.0f);
    AiMetaDataSetFlt(mds, "flow_time", "softmax", 10.0f);
-   AiMetaDataSetBool(mds, "turbulent", "linkable", false);
    AiMetaDataSetFlt(mds, "turbulence_offset", "softmin", -1.0f);
    AiMetaDataSetFlt(mds, "turbulence_offset", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "turbulence_scale", "softmin", -2.0f);
    AiMetaDataSetFlt(mds, "turbulence_scale", "softmax", 2.0f);
-   AiMetaDataSetBool(mds, "ridged", "linkable", false);
    AiMetaDataSetFlt(mds, "ridge_offset", "softmin", 0.0f);
    AiMetaDataSetFlt(mds, "ridge_offset", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "ridge_gain", "softmin", 0.0f);
    AiMetaDataSetFlt(mds, "ridge_gain", "softmax", 5.0f);
    AiMetaDataSetFlt(mds, "ridge_exponent", "softmin", 0.0f);
    AiMetaDataSetFlt(mds, "ridge_exponent", "softmax", 5.0f);
-   AiMetaDataSetBool(mds, "remap_output", "linkable", false);
+   AiMetaDataSetFlt(mds, "fractal_min", "softmin", -1.0f);
+   AiMetaDataSetFlt(mds, "fractal_min", "softmax", 1.0f);
+   AiMetaDataSetFlt(mds, "fractal_max", "softmin", -1.0f);
+   AiMetaDataSetFlt(mds, "fractal_max", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "output_min", "softmin", 0.0f);
    AiMetaDataSetFlt(mds, "output_min", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "output_max", "softmin", 0.0f);
@@ -235,8 +252,11 @@ node_parameters
    AiMetaDataSetStr(mds, "perlin_quality", "houdini.hide_when", "{ base_noise != perlin }");
    AiMetaDataSetStr(mds, "flow_power", "houdini.hide_when", "{ base_noise != flow }");
    AiMetaDataSetStr(mds, "flow_time", "houdini.hide_when", "{ base_noise != flow }");
+   AiMetaDataSetStr(mds, "fractal_min", "houdini.disable_when", "{ remap_output == 0 }");
+   AiMetaDataSetStr(mds, "fractal_max", "houdini.disable_when", "{ remap_output == 0 }");
    AiMetaDataSetStr(mds, "output_min", "houdini.disable_when", "{ remap_output == 0 }");
    AiMetaDataSetStr(mds, "output_max", "houdini.disable_when", "{ remap_output == 0 }");
+   AiMetaDataSetStr(mds, "clamp_output", "houdini.disable_when", "{ remap_output == 0 }");
 }
 
 node_initialize

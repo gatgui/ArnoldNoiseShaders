@@ -98,7 +98,7 @@ public:
    {
    }
    
-   float eval(const AtPoint &inP)
+   float eval(const AtPoint &inP, bool dampen=true)
    {
       Context ctx;
       
@@ -107,6 +107,9 @@ public:
       ctx.octave = 0;
       
       float out = 0.0f;
+      // use to dampen fractal output
+      float tmp = 1.0f;
+      float dampfactor = 0.0f;
       
       AtPoint P = inP * params.frequency;
       
@@ -115,17 +118,22 @@ public:
       
       for (; ctx.octave<params.octaves; ctx.octave++)
       {
-         //out += _modifier.apply(ctx, _noise.value(ctx, P.x, P.y, P.z));
          out += ctx.amplitude * _modifier.apply(ctx, _noise.value(ctx, P.x, P.y, P.z));
          
          // Prepare the next octave.
+         dampfactor += tmp;
+         
          ctx.amplitude *= params.persistence;
          ctx.frequency *= params.lacunarity;
          
+         tmp *= params.persistence;
          P *= params.lacunarity;
       }
       
-      out = _modifier.adjust(out);
+      if (dampen)
+      {
+         out /= dampfactor;
+      }
       
       _modifier.cleanup();
       _noise.cleanup();
@@ -305,14 +313,7 @@ struct CombineModifier
    
    inline float apply(const fBmBase::Context &ctx, float noise_value) const
    {
-      //return _mod2.apply(ctx, _mod1.apply(ctx, noise_value));
-      // Adjust directly output from mod1
-      return _mod2.apply(ctx, _mod1.adjust(_mod1.apply(ctx, noise_value)));
-   }
-   
-   inline float adjust(float noise_value) const
-   {
-      return _mod2.adjust(noise_value);
+      return _mod2.apply(ctx, _mod1.apply(ctx, noise_value));
    }
    
    inline void cleanup()
@@ -335,17 +336,12 @@ struct DefaultModifier
       return noise_value;
    }
    
-   inline float adjust(float noise_value) const
-   {
-      return noise_value;
-   }
-   
    inline void cleanup()
    {
    }
 };
 
-struct AbsoluteModifier
+struct TurbulenceModifier
 {
    struct Params
    {
@@ -363,11 +359,6 @@ struct AbsoluteModifier
    inline float apply(const fBmBase::Context &, float noise_value) const
    {
       return (_params.scale * (_params.offset + fabsf(noise_value)));
-   }
-   
-   inline float adjust(float noise_value) const
-   {
-      return (noise_value - _params.offset);
    }
    
    inline void cleanup()
@@ -409,11 +400,6 @@ struct RidgeModifier
       
       // apply octave spectral weight
       return (s * powf(ctx.frequency, -_params.exponent));
-   }
-   
-   inline float adjust(float noise_value) const
-   {
-      return (noise_value - _params.offset);
    }
    
    inline void cleanup()
