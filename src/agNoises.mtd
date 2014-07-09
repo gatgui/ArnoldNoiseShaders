@@ -1,12 +1,12 @@
 [node ln_factal]
-   maya.classification STRING "shader/surface"
+   maya.classification STRING "utility/noise"
    maya.id INT 0x001165FC
 
 [node ln_distort_point]
-   maya.classification STRING "shader/surface"
+   maya.classification STRING "utility/noise"
    maya.id INT 0x001165FD
 
 [node ln_voronoi]
-   maya.classification STRING "shader/surface"
+   maya.classification STRING "utility/noise"
    maya.id INT 0x001165FE
    
