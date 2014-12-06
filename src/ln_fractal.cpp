@@ -265,7 +265,7 @@ node_initialize
 
 node_update
 {
-   AiNodeSetLocalData(node, (void*) (AiNodeIsLinked(node, "custom_input") ? 1 : 0));
+   AiNodeSetLocalData(node, reinterpret_cast<void*>(AiNodeIsLinked(node, "custom_input") ? 1 : 0));
 }
 
 node_finish
