@@ -96,22 +96,35 @@ node_parameters
 
 node_initialize
 {
+   bool *data = (bool*) AiMalloc(sizeof(bool));
+   AiNodeSetLocalData(node, data);
 }
 
 node_update
 {
-   AiNodeSetLocalData(node, reinterpret_cast<void*>(AiNodeIsLinked(node, "custom_input") ? 1 : 0));
+   bool *data = (bool*) AiNodeGetLocalData(node);
+   *data = AiNodeIsLinked(node, "custom_input");
 }
 
 node_finish
 {
+   AiFree(AiNodeGetLocalData(node));
 }
 
 shader_evaluate
 {
-   bool is_input_linked = (AiNodeGetLocalData(node) == (void*)1);
-   Input input = (Input) AiShaderEvalParamInt(p_input);
-   AtPoint P = (is_input_linked ? AiShaderEvalParamPnt(p_custom_input) : GetInput(input, sg, node));
+   bool is_input_linked = *((bool*)AiNodeGetLocalData(node));
+   
+   AtPoint P;
+   if (is_input_linked)
+   {
+      P = AiShaderEvalParamPnt(p_custom_input);
+   }
+   else
+   {
+      Input input = (Input) AiShaderEvalParamInt(p_input);
+      P = GetInput(input, sg, node);
+   }
    
    float displacement = AiShaderEvalParamFlt(p_displacement);
    float frequency = AiShaderEvalParamFlt(p_frequency);
