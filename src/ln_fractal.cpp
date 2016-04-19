@@ -165,17 +165,25 @@ float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
    return out;
 }
 
+namespace SSTR
+{
+   extern AtString input;
+   extern AtString custom_input;
+   extern AtString base_noise;
+   extern AtString linkable;
+}
+
 node_parameters
 {
-   AiParameterEnum("input", I_P, InputNames);
-   AiParameterPnt("custom_input", 0.0f, 0.0f, 0.0f);
+   AiParameterEnum(SSTR::input, I_P, InputNames);
+   AiParameterPnt(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
    
    AiParameterFlt("amplitude", 1.0f);
    AiParameterFlt("frequency", 1.0f);
    AiParameterInt("octaves", 6);
    AiParameterFlt("persistence", 0.5f);
    AiParameterFlt("lacunarity", 2.0f);
-   AiParameterEnum("base_noise", NT_simplex, NoiseTypeNames);
+   AiParameterEnum(SSTR::base_noise, NT_simplex, NoiseTypeNames);
    AiParameterInt("value_seed", 0);
    AiParameterEnum("value_quality", NQ_std, NoiseQualityNames);
    AiParameterInt("perlin_seed", 0);
@@ -199,8 +207,8 @@ node_parameters
    
    // Common metadata
    AiMetaDataSetStr(mds, NULL, "desc", "Fractal Noise");
-   AiMetaDataSetBool(mds, "input", "linkable", false);
-   AiMetaDataSetBool(mds, "base_noise", "linkable", false);
+   AiMetaDataSetBool(mds, SSTR::input, SSTR::linkable, false);
+   AiMetaDataSetBool(mds, SSTR::base_noise, SSTR::linkable, false);
    AiMetaDataSetInt(mds, "octaves", "min", 1);
    AiMetaDataSetInt(mds, "octaves", "softmax", 10);
    AiMetaDataSetFlt(mds, "amplitude", "min", 0.0f);
@@ -213,10 +221,10 @@ node_parameters
    AiMetaDataSetFlt(mds, "lacunarity", "softmax", 5.0f);
    AiMetaDataSetInt(mds, "value_seed", "softmin", 0);
    AiMetaDataSetInt(mds, "value_seed", "softmax", 10);
-   AiMetaDataSetBool(mds, "value_quality", "linkable", false);
+   AiMetaDataSetBool(mds, "value_quality", SSTR::linkable, false);
    AiMetaDataSetInt(mds, "perlin_seed", "softmin", 0);
    AiMetaDataSetInt(mds, "perlin_seed", "softmax", 10);
-   AiMetaDataSetBool(mds, "perlin_quality", "linkable", false);
+   AiMetaDataSetBool(mds, "perlin_quality", SSTR::linkable, false);
    AiMetaDataSetFlt(mds, "flow_power", "softmin", 0.0f);
    AiMetaDataSetFlt(mds, "flow_power", "softmax", 1.0f);
    AiMetaDataSetFlt(mds, "flow_time", "softmin", 0.0f);
@@ -259,41 +267,48 @@ node_parameters
    AiMetaDataSetStr(mds, "clamp_output", "houdini.disable_when", "{ remap_output == 0 }");
 }
 
+struct NodeData
+{
+   Input input;
+   bool evalCustomInput;
+   NoiseType type;
+};
+
 node_initialize
 {
-   bool *data = (bool*) AiMalloc(sizeof(bool));
-   AiNodeSetLocalData(node, data);
+   AiNodeSetLocalData(node, new NodeData());
 }
 
 node_update
 {
-   bool *data = (bool*) AiNodeGetLocalData(node);
-   *data = AiNodeIsLinked(node, "custom_input");
+   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+
+   data->input = (Input) AiNodeGetInt(node, SSTR::input);
+   data->evalCustomInput = AiNodeIsLinked(node, SSTR::custom_input);
+   data->type = (NoiseType) AiNodeGetInt(node, SSTR::base_noise);
 }
 
 node_finish
 {
-   AiFree(AiNodeGetLocalData(node));
+   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   delete data;
 }
 
 shader_evaluate
 {
-   bool is_input_linked = *((bool*)AiNodeGetLocalData(node));
+   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
    
    AtPoint P;
-   if (is_input_linked)
+   if (data->evalCustomInput)
    {
       P = AiShaderEvalParamPnt(p_custom_input);
    }
    else
    {
-      Input input = (Input) AiShaderEvalParamInt(p_input);
-      P = GetInput(input, sg, node);
+      P = GetInput(data->input, sg, node);
    }
    
-   NoiseType nt = (NoiseType) AiShaderEvalParamInt(p_base_noise);
-   
-   switch (nt)
+   switch (data->type)
    {
    case NT_value:
       sg->out.FLT = EvalNoise<ValueNoise>(node, sg, P);

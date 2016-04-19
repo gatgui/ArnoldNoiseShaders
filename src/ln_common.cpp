@@ -1,5 +1,10 @@
 #include "ln_common.h"
 
+namespace SSTR
+{
+   extern AtString Pref;
+}
+
 const char* NoiseQualityNames[] = 
 {
    "fast",
@@ -39,7 +44,7 @@ AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *)
       P = sg->Po;
       break;
    case I_Pref:
-      if (!AiUDataGetPnt("Pref", &P))
+      if (!AiUDataGetPnt(SSTR::Pref, &P))
       {
          AiMsgWarning("Pref node defined, defaults to P");
          P = sg->P;

@@ -7,6 +7,17 @@ extern AtNodeMethods *DistortPointMtd;
 extern AtNodeMethods *VoronoiMtd;
 extern AtNodeMethods *FractalMtd;
 
+namespace SSTR
+{
+   AtString Pref("Pref");
+   AtString linkable("linkable");
+   AtString input("input");
+   AtString distance_func("distance_func");
+   AtString output_mode("output_mode");
+   AtString custom_input("custom_input");
+   AtString base_noise("base_noise");
+}
+
 node_loader
 {
    switch (i)
