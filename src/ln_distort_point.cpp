@@ -38,23 +38,6 @@ node_parameters
    AiParameterInt("perlin_seed", 0);
    AiParameterFlt("flow_power", 0.25f);
    AiParameterFlt("flow_time", 0.0f);
-   
-   AiMetaDataSetBool(mds, SSTR::input, SSTR::linkable, false);
-   AiMetaDataSetBool(mds, SSTR::base_noise, SSTR::linkable, false);
-   AiMetaDataSetInt(mds, "value_seed", "softmin", 0);
-   AiMetaDataSetInt(mds, "value_seed", "softmax", 10);
-   AiMetaDataSetInt(mds, "perlin_seed", "softmin", 0);
-   AiMetaDataSetInt(mds, "perlin_seed", "softmax", 10);
-   AiMetaDataSetFlt(mds, "flow_power", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "flow_power", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "flow_time", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "flow_time", "softmax", 10.0f);
-   
-   // Houdini specifics
-   AiMetaDataSetStr(mds, "value_seed", "houdini.hide_when", "{ base_noise != value }");
-   AiMetaDataSetStr(mds, "perlin_seed", "houdini.hide_when", "{ base_noise != perlin }");
-   AiMetaDataSetStr(mds, "flow_power", "houdini.hide_when", "{ base_noise != flow }");
-   AiMetaDataSetStr(mds, "flow_time", "houdini.hide_when", "{ base_noise != flow }");
 }
 
 struct NodeData

@@ -2,11 +2,192 @@
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FC
 
+   desc STRING "Fractal Noise"
+   
+   [attr input]
+      linkable BOOL false
+   
+   [attr base_noise]
+      linkable BOOL false
+   
+   [attr octaves]
+      min INT 0
+      softmax INT 10
+   
+   [attr amplitude]
+      min FLOAT 0.0
+      softmax FLOAT 5.0
+   
+   [attr frequency]
+      min FLOAT 0.0
+      softmax FLOAT 5.0
+   
+   [attr persistence]
+      min FLOAT 0.0
+      softmax FLOAT 1.0
+   
+   [attr lacunarity]
+      min FLOAT 0.0
+      softmax FLOAT 5.0
+   
+   [attr value_seed]
+      softmin INT 0
+      softmax INT 10
+      houdini.hide_when STRING "{ base_noise != value }"
+   
+   [attr value_quality]
+      linkable BOOL false
+      houdini.hide_when STRING "{ base_noise != value }"
+   
+   [attr perlin_seed]
+      softmin INT 0
+      softmax INT 10
+      houdini.hide_when STRING "{ base_noise != perlin }"
+   
+   [attr perlin_quality]
+      linkable BOOL false
+      houdini.hide_when STRING "{ base_noise != perlin }"
+   
+   [attr flow_power]
+      softmin FLOAT 0.0
+      softmax FLOAT 1.0
+      houdini.hide_when STRING "{ base_noise != flow }"
+   
+   [attr flow_time]
+      softmin FLOAT 0.0
+      softmax FLOAT 10.0
+      houdini.hide_when STRING "{ base_noise != flow }"
+   
+   [attr turbulence_offset]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+      houdini.disable_when STRING "{ turbulent == 0 }"
+   
+   [attr turbulence_scale]
+      softmin FLOAT -2.0
+      softmax FLOAT 2.0
+      houdini.disable_when STRING "{ turbulent == 0 }"
+      
+   [attr ridge_offset]
+      softmin FLOAT 0.0
+      softmax FLOAT 1.0
+      houdini.disable_when STRING "{ ridged == 0 }"
+   
+   [attr ridge_gain]
+      softmin FLOAT 0.0
+      softmax FLOAT 5.0
+      houdini.disable_when STRING "{ ridged == 0 }"
+   
+   [attr ridge_exponent]
+      softmin FLOAT 0.0
+      softmax FLOAT 5.0
+      houdini.disable_when STRING "{ ridged == 0 }"
+   
+   [attr fractal_min]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+      houdini.disable_when STRING "{ remap_output == 0 }"
+   
+   [attr fractal_max]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+      houdini.disable_when STRING "{ remap_output == 0 }"
+   
+   [attr output_min]
+      softmin FLOAT 0.0
+      softmax FLOAT 1.0
+      houdini.disable_when STRING "{ remap_output == 0 }"
+   
+   [attr output_max]
+      softmin FLOAT 0.0
+      softmax FLOAT 1.0
+      houdini.disable_when STRING "{ remap_output == 0 }"
+   
+   [attr clamp_output]
+      houdini.disable_when STRING "{ remap_output == 0 }"
+   
+
 [node ln_distort_point]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FD
+   
+   [attr input]
+      linkable BOOL false
+   
+   [attr frequency]
+      min FLOAT 0.0
+      softmax FLOAT 5.0
+   
+   [attr power]
+      softmin FLOAT 0.0
+      softmax FLOAT 5.0
+   
+   [attr roughness]
+      softmin INT 0
+      softmax INT 10
+   
+   [attr base_noise]
+      linkable BOOL false
+   
+   [attr value_seed]
+      softmin INT 0
+      softmax INT 10
+      houdini.hide_when STRING "{ base_noise != value }"
+   
+   [attr perlin_seed]
+      softmin INT 0
+      softmax INT 10
+      houdini.hide_when STRING "{ base_noise != perlin }"
+   
+   [attr flow_power]
+      softmin FLOAT 0.0
+      softmax FLOAT 1.0
+      houdini.hide_when STRING "{ base_noise != flow }"
+   
+   [attr flow_time]
+      softmin FLOAT 0.0
+      softmax FLOAT 10.0
+      houdini.hide_when STRING "{ base_noise != flow }"
+   
 
 [node ln_voronoi]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FE
+   
+   [attr input]
+      linkable BOOL false
+   
+   [attr displacement]
+      softmin FLOAT 0.0
+      softmax FLOAT 1.0
+   
+   [attr frequency]
+      min FLOAT 0.0
+      softmax FLOAT 5.0
+   
+   [attr weight1]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+   
+   [attr weight2]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+   
+   [attr weight3]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+   
+   [attr weight4]
+      softmin FLOAT -1.0
+      softmax FLOAT 1.0
+   
+   [attr seed]
+      softmin INT 0
+      softmax INT 10
+   
+   [attr distance_func]
+      linkable BOOL false
+   
+   [attr output_mode]
+      linkable BOOL false
    

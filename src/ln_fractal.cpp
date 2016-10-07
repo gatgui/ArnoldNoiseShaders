@@ -204,67 +204,6 @@ node_parameters
    AiParameterFlt("output_min", 0.0f);
    AiParameterFlt("output_max", 1.0f);
    AiParameterBool("clamp_output", true);
-   
-   // Common metadata
-   AiMetaDataSetStr(mds, NULL, "desc", "Fractal Noise");
-   AiMetaDataSetBool(mds, SSTR::input, SSTR::linkable, false);
-   AiMetaDataSetBool(mds, SSTR::base_noise, SSTR::linkable, false);
-   AiMetaDataSetInt(mds, "octaves", "min", 1);
-   AiMetaDataSetInt(mds, "octaves", "softmax", 10);
-   AiMetaDataSetFlt(mds, "amplitude", "min", 0.0f);
-   AiMetaDataSetFlt(mds, "amplitude", "softmax", 5.0f);
-   AiMetaDataSetFlt(mds, "frequency", "min", 0.0f);
-   AiMetaDataSetFlt(mds, "frequency", "softmax", 5.0f);
-   AiMetaDataSetFlt(mds, "persistence", "min", 0.0f);
-   AiMetaDataSetFlt(mds, "persistence", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "lacunarity", "min", 0.0f);
-   AiMetaDataSetFlt(mds, "lacunarity", "softmax", 5.0f);
-   AiMetaDataSetInt(mds, "value_seed", "softmin", 0);
-   AiMetaDataSetInt(mds, "value_seed", "softmax", 10);
-   AiMetaDataSetBool(mds, "value_quality", SSTR::linkable, false);
-   AiMetaDataSetInt(mds, "perlin_seed", "softmin", 0);
-   AiMetaDataSetInt(mds, "perlin_seed", "softmax", 10);
-   AiMetaDataSetBool(mds, "perlin_quality", SSTR::linkable, false);
-   AiMetaDataSetFlt(mds, "flow_power", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "flow_power", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "flow_time", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "flow_time", "softmax", 10.0f);
-   AiMetaDataSetFlt(mds, "turbulence_offset", "softmin", -1.0f);
-   AiMetaDataSetFlt(mds, "turbulence_offset", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "turbulence_scale", "softmin", -2.0f);
-   AiMetaDataSetFlt(mds, "turbulence_scale", "softmax", 2.0f);
-   AiMetaDataSetFlt(mds, "ridge_offset", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "ridge_offset", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "ridge_gain", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "ridge_gain", "softmax", 5.0f);
-   AiMetaDataSetFlt(mds, "ridge_exponent", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "ridge_exponent", "softmax", 5.0f);
-   AiMetaDataSetFlt(mds, "fractal_min", "softmin", -1.0f);
-   AiMetaDataSetFlt(mds, "fractal_min", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "fractal_max", "softmin", -1.0f);
-   AiMetaDataSetFlt(mds, "fractal_max", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "output_min", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "output_min", "softmax", 1.0f);
-   AiMetaDataSetFlt(mds, "output_max", "softmin", 0.0f);
-   AiMetaDataSetFlt(mds, "output_max", "softmax", 1.0f);
-   
-   // Houdini specifics
-   AiMetaDataSetStr(mds, "turbulence_offset", "houdini.disable_when", "{ turbulent == 0 }");
-   AiMetaDataSetStr(mds, "turbulence_scale", "houdini.disable_when", "{ turbulent == 0 }");
-   AiMetaDataSetStr(mds, "ridge_offset", "houdini.disable_when", "{ ridged == 0 }");
-   AiMetaDataSetStr(mds, "ridge_gain", "houdini.disable_when", "{ ridged == 0 }");
-   AiMetaDataSetStr(mds, "ridge_exponent", "houdini.disable_when", "{ ridged == 0 }");
-   AiMetaDataSetStr(mds, "value_seed", "houdini.hide_when", "{ base_noise != value }");
-   AiMetaDataSetStr(mds, "value_quality", "houdini.hide_when", "{ base_noise != value }");
-   AiMetaDataSetStr(mds, "perlin_seed", "houdini.hide_when", "{ base_noise != perlin }");
-   AiMetaDataSetStr(mds, "perlin_quality", "houdini.hide_when", "{ base_noise != perlin }");
-   AiMetaDataSetStr(mds, "flow_power", "houdini.hide_when", "{ base_noise != flow }");
-   AiMetaDataSetStr(mds, "flow_time", "houdini.hide_when", "{ base_noise != flow }");
-   AiMetaDataSetStr(mds, "fractal_min", "houdini.disable_when", "{ remap_output == 0 }");
-   AiMetaDataSetStr(mds, "fractal_max", "houdini.disable_when", "{ remap_output == 0 }");
-   AiMetaDataSetStr(mds, "output_min", "houdini.disable_when", "{ remap_output == 0 }");
-   AiMetaDataSetStr(mds, "output_max", "houdini.disable_when", "{ remap_output == 0 }");
-   AiMetaDataSetStr(mds, "clamp_output", "houdini.disable_when", "{ remap_output == 0 }");
 }
 
 struct NodeData

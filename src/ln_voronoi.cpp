@@ -97,10 +97,6 @@ node_parameters
    AiParameterFlt("weight3", 0.0f);
    AiParameterFlt("weight4", 0.0f);
    AiParameterInt("seed", 0);
-   
-   AiMetaDataSetBool(mds, SSTR::input, SSTR::linkable, false);
-   AiMetaDataSetBool(mds, SSTR::distance_func, SSTR::linkable, false);
-   AiMetaDataSetBool(mds, SSTR::output_mode, SSTR::linkable, false);
 }
 
 struct NodeData
