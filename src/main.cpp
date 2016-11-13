@@ -27,6 +27,10 @@ SOFTWARE.
 #include <cstdio>
 #include <cstring>
 
+#ifndef PREFIX
+#  define PREFIX ""
+#endif
+
 extern AtNodeMethods *DistortPointMtd;
 extern AtNodeMethods *VoronoiMtd;
 extern AtNodeMethods *FractalMtd;
