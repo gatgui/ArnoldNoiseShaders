@@ -1,4 +1,4 @@
-[node ln_factal]
+[node ${prefix}factal]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FC
 
@@ -107,7 +107,7 @@
       houdini.disable_when STRING "{ remap_output == 0 }"
    
 
-[node ln_distort_point]
+[node ${prefix}distort_point]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FD
    
@@ -150,7 +150,7 @@
       houdini.hide_when STRING "{ base_noise != flow }"
    
 
-[node ln_voronoi]
+[node ${prefix}voronoi]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FE
    

@@ -23,21 +23,21 @@ node_loader
    switch (i)
    {
    case 0:
-      node->name = "ln_fractal";
+      node->name = PREFIX "fractal";
       node->node_type = AI_NODE_SHADER;
       node->output_type = AI_TYPE_FLOAT;
       node->methods = FractalMtd;
       strcpy(node->version, AI_VERSION);
       return true;
    case 1:
-      node->name = "ln_distort_point";
+      node->name = PREFIX "distort_point";
       node->node_type = AI_NODE_SHADER;
       node->output_type = AI_TYPE_POINT;
       node->methods = DistortPointMtd;
       strcpy(node->version, AI_VERSION);
       return true;
    case 2:
-      node->name = "ln_voronoi";
+      node->name = PREFIX "voronoi";
       node->node_type = AI_NODE_SHADER;
       node->output_type = AI_TYPE_FLOAT;
       node->methods = VoronoiMtd;

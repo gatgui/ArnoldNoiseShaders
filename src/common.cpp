@@ -1,4 +1,4 @@
-#include "ln_common.h"
+#include "common.h"
 
 namespace SSTR
 {

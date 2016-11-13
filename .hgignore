@@ -1,8 +1,0 @@
-syntax: glob
-*.pyc
-*.dblite
-release/
-debug/
-.build/
-excons.cache
-.DS_Store

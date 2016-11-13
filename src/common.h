@@ -1,5 +1,5 @@
-#ifndef __agNoises_quality_h__
-#define __agNoises_quality_h__
+#ifndef __noise_common_h__
+#define __noise_common_h__
 
 #include <ai.h>
 #include <algorithm>
