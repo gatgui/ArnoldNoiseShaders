@@ -41,3 +41,5 @@ prjs = [
 excons.DeclareTargets(env, prjs)
 
 excons.EcosystemDist(env, "noise.env", {name: ""}, name=name)
+
+Default([name])
