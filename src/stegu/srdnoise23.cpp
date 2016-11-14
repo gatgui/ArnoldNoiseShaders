@@ -173,8 +173,8 @@ float graddotp3( float gx, float gy, float gz, float x, float y, float z ) {
  * F2 = 0.5*(sqrt(3.0)-1.0)
  * G2 = (3.0-Math.sqrt(3.0))/6.0
  */
-#define F2 0.366025403
-#define G2 0.211324865
+#define F2 0.366025403f
+#define G2 0.211324865f
 
 /** 2D simplex noise with rotating gradients.
  * If the last two arguments are not null, the analytic derivative
@@ -289,8 +289,8 @@ float srdnoise2( float x, float y, float angle, float *dnoise_dx, float *dnoise_
 /* Skewing factors for 3D simplex grid:
  * F3 = 1/3
  * G3 = 1/6 */
-#define F3 0.333333333
-#define G3 0.166666667
+#define F3 0.333333333f
+#define G3 0.166666667f
 
 float srdnoise3( float x, float y, float z, float angle,
                  float *dnoise_dx, float *dnoise_dy, float *dnoise_dz )

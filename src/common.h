@@ -191,11 +191,11 @@ struct ValueNoise
    {
       // Make sure that these floating-point values have the same range as a 32-
       // bit integer so that we can pass them to the coherent-noise functions.
-      float nx = noise::MakeInt32Range(x);
-      float ny = noise::MakeInt32Range(y);
-      float nz = noise::MakeInt32Range(z);
+      float nx = float(noise::MakeInt32Range(x));
+      float ny = float(noise::MakeInt32Range(y));
+      float nz = float(noise::MakeInt32Range(z));
       _params.seed = (_params.seed + ctx.octave) & 0xFFFFFFFF;
-      return noise::ValueCoherentNoise3D(nx, ny, nz, _params.seed, (noise::NoiseQuality)_params.quality);
+      return float(noise::ValueCoherentNoise3D(nx, ny, nz, _params.seed, (noise::NoiseQuality)_params.quality));
    }
    
    inline void cleanup()
@@ -228,11 +228,11 @@ struct PerlinNoise
    {
       // Make sure that these floating-point values have the same range as a 32-
       // bit integer so that we can pass them to the coherent-noise functions.
-      float nx = noise::MakeInt32Range(x);
-      float ny = noise::MakeInt32Range(y);
-      float nz = noise::MakeInt32Range(z);
+      float nx = float(noise::MakeInt32Range(x));
+      float ny = float(noise::MakeInt32Range(y));
+      float nz = float(noise::MakeInt32Range(z));
       _params.seed = (_params.seed + ctx.octave) & 0xFFFFFFFF;
-      return noise::GradientCoherentNoise3D(nx, ny, nz, _params.seed, (noise::NoiseQuality)_params.quality);
+      return float(noise::GradientCoherentNoise3D(nx, ny, nz, _params.seed, (noise::NoiseQuality)_params.quality));
    }
    
    inline void cleanup()

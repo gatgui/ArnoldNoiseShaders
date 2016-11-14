@@ -205,9 +205,9 @@ shader_evaluate
          for (int xcur=xbase-2; xcur<=xbase+2; ++xcur)
          {
             // Calculate the position and distance to the seed point inside of this unit cube.
-            Pcur.x = xcur + noise::ValueNoise3D(xcur, ycur, zcur, seed);
-            Pcur.y = ycur + noise::ValueNoise3D(xcur, ycur, zcur, seed+1);
-            Pcur.z = zcur + noise::ValueNoise3D(xcur, ycur, zcur, seed+2);
+            Pcur.x = xcur + float(noise::ValueNoise3D(xcur, ycur, zcur, seed));
+            Pcur.y = ycur + float(noise::ValueNoise3D(xcur, ycur, zcur, seed+1));
+            Pcur.z = zcur + float(noise::ValueNoise3D(xcur, ycur, zcur, seed+2));
             
             float dist = evalDist(P, Pcur);
 
@@ -256,7 +256,7 @@ shader_evaluate
    switch (data->outputMode)
    {
    case OM_constant:
-      sg->out.FLT = displacement * 0.5f * (1.0f + noise::ValueNoise3D(int(floorf(Pf[0].x)), int(floorf(Pf[0].y)), int(floorf(Pf[0].z))));
+      sg->out.FLT = displacement * 0.5f * (1.0f + float(noise::ValueNoise3D(int(floorf(Pf[0].x)), int(floorf(Pf[0].y)), int(floorf(Pf[0].z)))));
       break;
    case OM_f1:
       sg->out.FLT = displacement * f[0];

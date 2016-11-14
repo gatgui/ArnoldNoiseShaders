@@ -23,6 +23,9 @@ def ArnoldMtd(target, source, env):
 env["BUILDERS"]["ArnoldMtd"] = Builder(action=ArnoldMtd, suffix=".mtd", src_suffix=".mtd.in")
 if sys.platform != "win32":
    env.Append(CPPFLAGS=" -Wno-unused-parameter")
+else:
+   env.Append(CPPDEFINES=["_CRT_SECURE_NO_WARNINGS"]) # strcpy 
+   env.Append(CPPFLAGS=" /wd4100") # unreferenced format parameter
 
 mtd = env.ArnoldMtd("src/%s.mtd" % name, "src/noise.mtd.in")
 
