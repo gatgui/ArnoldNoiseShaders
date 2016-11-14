@@ -1,4 +1,4 @@
-[node ${prefix}factal]
+[node ${prefix}fractal]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FC
 
