@@ -230,7 +230,7 @@ node_parameters
    AiParameterBool("clamp_output", true);
 }
 
-struct NodeData
+struct FractalData
 {
    Input input;
    bool evalCustomInput;
@@ -239,12 +239,12 @@ struct NodeData
 
 node_initialize
 {
-   AiNodeSetLocalData(node, new NodeData());
+   AiNodeSetLocalData(node, new FractalData());
 }
 
 node_update
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   FractalData *data = (FractalData*) AiNodeGetLocalData(node);
 
    data->input = (Input) AiNodeGetInt(node, SSTR::input);
    data->evalCustomInput = AiNodeIsLinked(node, SSTR::custom_input);
@@ -253,13 +253,13 @@ node_update
 
 node_finish
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   FractalData *data = (FractalData*) AiNodeGetLocalData(node);
    delete data;
 }
 
 shader_evaluate
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   FractalData *data = (FractalData*) AiNodeGetLocalData(node);
    
    AtPoint P;
    if (data->evalCustomInput)

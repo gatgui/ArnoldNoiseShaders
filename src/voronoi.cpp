@@ -123,7 +123,7 @@ node_parameters
    AiParameterInt("seed", 0);
 }
 
-struct NodeData
+struct VoronoiData
 {
    Input input;
    bool evalCustomInput;
@@ -133,12 +133,12 @@ struct NodeData
 
 node_initialize
 {
-   AiNodeSetLocalData(node, new NodeData());
+   AiNodeSetLocalData(node, new VoronoiData());
 }
 
 node_update
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   VoronoiData *data = (VoronoiData*) AiNodeGetLocalData(node);
 
    data->input = (Input) AiNodeGetInt(node, SSTR::input);
    data->evalCustomInput = AiNodeIsLinked(node, SSTR::custom_input);
@@ -148,13 +148,13 @@ node_update
 
 node_finish
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   VoronoiData *data = (VoronoiData*) AiNodeGetLocalData(node);
    delete data;
 }
 
 shader_evaluate
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   VoronoiData *data = (VoronoiData*) AiNodeGetLocalData(node);
    
    AtPoint P;
    if (data->evalCustomInput)

@@ -64,7 +64,7 @@ node_parameters
    AiParameterFlt("flow_time", 0.0f);
 }
 
-struct NodeData
+struct DistortPointData
 {
    Input input;
    bool evalCustomInput;
@@ -73,12 +73,12 @@ struct NodeData
 
 node_initialize
 {
-   AiNodeSetLocalData(node, new NodeData());
+   AiNodeSetLocalData(node, new DistortPointData());
 }
 
 node_update
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   DistortPointData *data = (DistortPointData*) AiNodeGetLocalData(node);
    data->evalCustomInput = AiNodeIsLinked(node, SSTR::custom_input);
    data->input = (Input) AiNodeGetInt(node, SSTR::input);
    data->type = (NoiseType) AiNodeGetInt(node, SSTR::base_noise);
@@ -86,7 +86,7 @@ node_update
 
 node_finish
 {
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   DistortPointData *data = (DistortPointData*) AiNodeGetLocalData(node);
    delete data;
 }
 
@@ -102,7 +102,7 @@ shader_evaluate
    static float y2 = (11213.0f / 65536.0f);
    static float z2 = (44845.0f / 65536.0f);
    
-   NodeData *data = (NodeData*) AiNodeGetLocalData(node);
+   DistortPointData *data = (DistortPointData*) AiNodeGetLocalData(node);
    
    AtPoint P;
    if (data->evalCustomInput)
