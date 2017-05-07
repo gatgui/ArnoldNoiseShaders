@@ -1,0 +1,61 @@
+import pymel.core as pm
+from mtoa.ui.ae.shaderTemplate import ShaderAETemplate
+
+class AE@FRACTAL_MAYA_NODENAME@Template(ShaderAETemplate):
+   def setup(self):
+      self.beginScrollLayout()
+      
+      self.beginLayout("Parameters", collapse=False)
+      self.addControl("input")
+      self.addControl("custom_input")
+      self.addControl("frequency")
+      self.addControl("octaves")
+      self.addControl("persistence")
+      self.addControl("lacunarity")
+      self.addControl("base_noise")
+
+      self.beginLayout("Value Noise", collapse=False)
+      self.addControl("value_seed")
+      self.addControl("value_quality")
+      self.endLayout()
+
+      self.beginLayout("Perlin Noise", collapse=False)
+      self.addControl("perlin_seed")
+      self.addControl("perlin_quality")
+      self.endLayout()
+
+      self.beginLayout("Flow Noise", collapse=False)
+      self.addControl("flow_power")
+      self.addControl("flow_time")
+      self.endLayout()
+      
+      self.beginLayout("Turbulence", collapse=False)
+      self.addControl("turbulent", label="Enable")
+      self.addControl("turbulence_offset", label="Offset")
+      self.addControl("turbulence_scale", label="Scale")
+      self.endLayout()
+      
+      self.beginLayout("Ridge", collapse=False)
+      self.addControl("ridged", label="Enable")
+      self.addControl("ridge_offset", label="Offset")
+      self.addControl("ridge_gain", label="Gain")
+      self.addControl("ridge_exponent", label="Exponent")
+      self.endLayout()
+      
+      self.beginLayout("Remap", collapse=False)
+      self.addControl("remap_output", label="Enable")
+      self.addControl("fractal_min")
+      self.addControl("fractal_max")
+      self.addControl("output_min")
+      self.addControl("output_max")
+      self.addControl("clamp_output", label="Clamp")
+      self.endLayout()
+      
+      self.addControl("dampen_output")
+      
+      self.endLayout()
+      
+      pm.mel.AEdependNodeTemplate(self.nodeName)
+      self.addExtraControls()
+      self.endScrollLayout()
+

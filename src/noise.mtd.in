@@ -1,6 +1,7 @@
-[node ${prefix}fractal]
+[node @PREFIX@fractal]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FC
+   maya.name STRING @FRACTAL_MAYA_NODENAME@
 
    desc STRING "Fractal Noise"
    
@@ -107,9 +108,10 @@
       houdini.disable_when STRING "{ remap_output == 0 }"
    
 
-[node ${prefix}distort_point]
+[node @PREFIX@distort_point]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FD
+   maya.name STRING @DISTORT_POINT_MAYA_NODENAME@
    
    [attr input]
       linkable BOOL false
@@ -150,9 +152,10 @@
       houdini.hide_when STRING "{ base_noise != flow }"
    
 
-[node ${prefix}voronoi]
+[node @PREFIX@voronoi]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FE
+   maya.name STRING @VORONOI_MAYA_NODENAME@
    
    [attr input]
       linkable BOOL false

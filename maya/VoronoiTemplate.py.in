@@ -1,0 +1,25 @@
+import pymel.core as pm
+from mtoa.ui.ae.shaderTemplate import ShaderAETemplate
+
+class AE@VORONOI_MAYA_NODENAME@Template(ShaderAETemplate):
+   def setup(self):
+      self.beginScrollLayout()
+      
+      self.beginLayout("Parameters", collapse=False)
+      self.addControl("input")
+      self.addControl("custom_input")
+      self.addControl("displacement")
+      self.addControl("frequency")
+      self.addControl("distance_func")
+      self.addControl("output_mode")
+      self.addControl("weight1")
+      self.addControl("weight2")
+      self.addControl("weight3")
+      self.addControl("weight4")
+      self.addControl("seed")
+      self.endLayout()
+      
+      pm.mel.AEdependNodeTemplate(self.nodeName)
+      self.addExtraControls()
+      self.endScrollLayout()
+

@@ -1,0 +1,30 @@
+import pymel.core as pm
+from mtoa.ui.ae.shaderTemplate import ShaderAETemplate
+
+class AE@DISTORT_POINT_MAYA_NODENAME@Template(ShaderAETemplate):
+   def setup(self):
+      self.beginScrollLayout()
+      
+      self.beginLayout("Parameters", collapse=False)
+      self.addControl("input")
+      self.addControl("custom_input")
+      self.addControl("frequency")
+      self.addControl("power")
+      self.addControl("roughness")
+      self.addControl("base_noise")
+      self.beginLayout("Value Noise", collapse=False)
+      self.addControl("value_seed")
+      self.endLayout()
+      self.beginLayout("Perlin Noise", collapse=False)
+      self.addControl("perlin_seed")
+      self.endLayout()
+      self.beginLayout("Flow Noise", collapse=False)
+      self.addControl("flow_power")
+      self.addControl("flow_time")
+      self.endLayout()
+      self.endLayout()
+      
+      pm.mel.AEdependNodeTemplate(self.nodeName)
+      self.addExtraControls()
+      self.endScrollLayout()
+
