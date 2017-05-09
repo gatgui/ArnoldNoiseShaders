@@ -1,7 +1,7 @@
 import pymel.core as pm
 from mtoa.ui.ae.shaderTemplate import ShaderAETemplate
 
-class AE@DISTORT_POINT_MAYA_NODENAME@Template(ShaderAETemplate):
+class AE@DISTORTPOINT_MAYA_NODENAME@Template(ShaderAETemplate):
    def setup(self):
       self.beginScrollLayout()
       

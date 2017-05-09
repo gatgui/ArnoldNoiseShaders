@@ -23,7 +23,7 @@ distort_point_maya_name = toMayaName(prefix + "distort_point")
 voronoi_maya_name = toMayaName(prefix + "voronoi")
 opts = {"PREFIX": prefix,
         "FRACTAL_MAYA_NODENAME": fractal_maya_name,
-        "DISTORT_POINT_MAYA_NODENAME": distort_point_maya_name,
+        "DISTORTPOINT_MAYA_NODENAME": distort_point_maya_name,
         "VORONOI_MAYA_NODENAME": voronoi_maya_name}
 
 GenerateMtd = excons.config.AddGenerator(env, "mtd", opts)

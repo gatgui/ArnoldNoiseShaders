@@ -111,7 +111,7 @@
 [node @PREFIX@distort_point]
    maya.classification STRING "utility/noise"
    maya.id INT 0x001165FD
-   maya.name STRING @DISTORT_POINT_MAYA_NODENAME@
+   maya.name STRING @DISTORTPOINT_MAYA_NODENAME@
    
    [attr input]
       linkable BOOL false
