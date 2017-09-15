@@ -63,7 +63,7 @@ enum NoiseType
 extern const char* NoiseTypeNames[];
 
 
-AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *node);
+AtVector GetInput(Input which, AtShaderGlobals *sg, AtNode *node);
 
 
 class fBmBase
@@ -122,7 +122,7 @@ public:
    {
    }
    
-   float eval(const AtPoint &inP, bool dampen=true)
+   float eval(const AtVector &inP, bool dampen=true)
    {
       Context ctx;
       
@@ -135,7 +135,7 @@ public:
       float tmp = 1.0f;
       float dampfactor = 0.0f;
       
-      AtPoint P = inP * params.frequency;
+      AtVector P = inP * params.frequency;
       
       _noise.prepare(params, noise_params);
       _modifier.prepare(params, modifier_params);
@@ -420,7 +420,7 @@ struct RidgeModifier
       s *= s * _weight;
       
       // update weight for next octave
-      _weight = CLAMP(s * _params.gain, 0.0f, 1.0f);
+      _weight = AiClamp(s * _params.gain, 0.0f, 1.0f);
       
       // apply octave spectral weight
       return (s * powf(ctx.frequency, -_params.exponent));

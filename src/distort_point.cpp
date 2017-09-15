@@ -51,7 +51,7 @@ namespace SSTR
 node_parameters
 {
    AiParameterEnum(SSTR::input, I_P, InputNames);
-   AiParameterPnt(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
+   AiParameterVec(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
    
    AiParameterFlt("frequency", 1.0f);
    AiParameterFlt("power", 1.0f);
@@ -104,10 +104,10 @@ shader_evaluate
    
    DistortPointData *data = (DistortPointData*) AiNodeGetLocalData(node);
    
-   AtPoint P;
+   AtVector P;
    if (data->evalCustomInput)
    {
-      P = AiShaderEvalParamPnt(p_custom_input);
+      P = AiShaderEvalParamVec(p_custom_input);
    }
    else
    {
@@ -118,7 +118,7 @@ shader_evaluate
    float power = AiShaderEvalParamFlt(p_power);
    int roughness = AiShaderEvalParamInt(p_roughness);
    
-   AtPoint P0, P1, P2;
+   AtVector P0, P1, P2;
    
    P0.x = P.x + x0;
    P0.y = P.y + y0;
@@ -140,11 +140,11 @@ shader_evaluate
          fBm<ValueNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
          fbm.noise_params.quality = NQ_std;
          fbm.noise_params.seed = seed + 0;
-         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
+         sg->out.VEC().x = P.x + power * fbm.eval(P0, false);
          fbm.noise_params.seed = seed + 1;
-         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
+         sg->out.VEC().y = P.y + power * fbm.eval(P1, false);
          fbm.noise_params.seed = seed + 2;
-         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
+         sg->out.VEC().z = P.z + power * fbm.eval(P2, false);
       }
       break;
    case NT_perlin:
@@ -153,11 +153,11 @@ shader_evaluate
          fBm<PerlinNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
          fbm.noise_params.quality = NQ_std;
          fbm.noise_params.seed = seed + 0;
-         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
+         sg->out.VEC().x = P.x + power * fbm.eval(P0, false);
          fbm.noise_params.seed = seed + 1;
-         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
+         sg->out.VEC().y = P.y + power * fbm.eval(P1, false);
          fbm.noise_params.seed = seed + 2;
-         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
+         sg->out.VEC().z = P.z + power * fbm.eval(P2, false);
       }
       break;
    case NT_flow:
@@ -165,18 +165,18 @@ shader_evaluate
          fBm<FlowNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
          fbm.noise_params.power = AiShaderEvalParamFlt(p_flow_power);
          fbm.noise_params.t = AiShaderEvalParamFlt(p_flow_time);
-         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
-         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
-         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
+         sg->out.VEC().x = P.x + power * fbm.eval(P0, false);
+         sg->out.VEC().y = P.y + power * fbm.eval(P1, false);
+         sg->out.VEC().z = P.z + power * fbm.eval(P2, false);
       }
       break;
    case NT_simplex:
    default:
       {
          fBm<SimplexNoise, DefaultModifier> fbm(roughness, 1.0f, 0.5f, frequency, 2.0f);
-         sg->out.PNT.x = P.x + power * fbm.eval(P0, false);
-         sg->out.PNT.y = P.y + power * fbm.eval(P1, false);
-         sg->out.PNT.z = P.z + power * fbm.eval(P2, false);
+         sg->out.VEC().x = P.x + power * fbm.eval(P0, false);
+         sg->out.VEC().y = P.y + power * fbm.eval(P1, false);
+         sg->out.VEC().z = P.z + power * fbm.eval(P2, false);
       }
       break;
    }
