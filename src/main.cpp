@@ -31,9 +31,9 @@ SOFTWARE.
 #  define PREFIX ""
 #endif
 
-extern AtNodeMethods *DistortPointMtd;
-extern AtNodeMethods *VoronoiMtd;
-extern AtNodeMethods *FractalMtd;
+extern const AtNodeMethods *DistortPointMtd;
+extern const AtNodeMethods *VoronoiMtd;
+extern const AtNodeMethods *FractalMtd;
 
 namespace SSTR
 {
