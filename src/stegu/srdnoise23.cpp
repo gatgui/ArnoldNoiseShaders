@@ -138,8 +138,8 @@ static float grad3v[16][3] = {
  * gradients-dot-residualvectors in 2D and 3D.
  */
 
-void gradrot2( int hash, float sin_t, float cos_t, float *gx, float *gy ) {
-    int h = hash & 7;
+void gradrot2( unsigned char hash, float sin_t, float cos_t, float *gx, float *gy ) {
+    unsigned char h = hash & 0x7;
     float gx0 = grad2[h][0];
     float gy0 = grad2[h][1];
     *gx = cos_t * gx0 - sin_t * gy0;
@@ -147,8 +147,8 @@ void gradrot2( int hash, float sin_t, float cos_t, float *gx, float *gy ) {
     return;
 }
 
-void gradrot3( int hash, float sin_t, float cos_t, float *gx, float *gy, float *gz ) {
-    int h = hash & 15;
+void gradrot3( unsigned char hash, float sin_t, float cos_t, float *gx, float *gy, float *gz ) {
+    unsigned char h = hash & 0xF;
     float gux = grad3u[h][0];
     float guy = grad3u[h][1];
     float guz = grad3u[h][2];
@@ -216,15 +216,18 @@ float srdnoise2( float x, float y, float angle, float *dnoise_dx, float *dnoise_
     float y2 = y0 - 1.0f + 2.0f * G2;
 
     /* Wrap the integer indices at 256, to avoid indexing perm[] out of bounds */
-    int ii = i % 256;
-    int jj = j % 256;
+    unsigned int ii = (unsigned int)i % 256;
+    unsigned int jj = (unsigned int)j % 256;
+    unsigned int _ii = 0;
+    unsigned int _jj = 0;
 
     /* Calculate the contribution from the three corners */
     float t0 = 0.5f - x0 * x0 - y0 * y0;
     float t20, t40;
     if( t0 < 0.0f ) t40 = t20 = t0 = n0 = gx0 = gy0 = 0.0f; /* No influence */
     else {
-      gradrot2( perm[ii + perm[jj]], sin_t, cos_t, &gx0, &gy0 );
+      _ii = (ii + (unsigned int)perm[jj]) % 256;
+      gradrot2( perm[_ii], sin_t, cos_t, &gx0, &gy0 );
       t20 = t0 * t0;
       t40 = t20 * t20;
       n0 = t40 * graddotp2( gx0, gy0, x0, y0 );
@@ -234,7 +237,9 @@ float srdnoise2( float x, float y, float angle, float *dnoise_dx, float *dnoise_
     float t21, t41;
     if( t1 < 0.0f ) t21 = t41 = t1 = n1 = gx1 = gy1 = 0.0f; /* No influence */
     else {
-      gradrot2( perm[ii + i1 + perm[jj + j1]], sin_t, cos_t, &gx1, &gy1 );
+      _jj = (jj + j1) % 256;
+      _ii = (ii + i1 + (unsigned int)perm[_jj]) % 256;
+      gradrot2( perm[_ii], sin_t, cos_t, &gx1, &gy1 );
       t21 = t1 * t1;
       t41 = t21 * t21;
       n1 = t41 * graddotp2( gx1, gy1, x1, y1 );
@@ -244,7 +249,9 @@ float srdnoise2( float x, float y, float angle, float *dnoise_dx, float *dnoise_
     float t22, t42;
     if( t2 < 0.0f ) t42 = t22 = t2 = n2 = gx2 = gy2 = 0.0f; /* No influence */
     else {
-      gradrot2( perm[ii + 1 + perm[jj + 1]], sin_t, cos_t, &gx2, &gy2 );
+      _jj = (jj + 1) % 256;
+      _ii = (ii + 1 + (unsigned int)perm[_jj]) % 256;
+      gradrot2( perm[_ii], sin_t, cos_t, &gx2, &gy2 );
       t22 = t2 * t2;
       t42 = t22 * t22;
       n2 = t42 * graddotp2( gx2, gy2, x2, y2 );
@@ -354,16 +361,22 @@ float srdnoise3( float x, float y, float z, float angle,
     float z3 = z0 - 1.0f + 3.0f * G3;
 
     /* Wrap the integer indices at 256, to avoid indexing perm[] out of bounds */
-    int ii = i % 256;
-    int jj = j % 256;
-    int kk = k % 256;
+    unsigned int ii = (unsigned int)i % 256;
+    unsigned int jj = (unsigned int)j % 256;
+    unsigned int kk = (unsigned int)k % 256;
+    unsigned int _ii = 0;
+    unsigned int _jj = 0;
+    unsigned int _kk = 0;
 
     /* Calculate the contribution from the four corners */
     float t0 = 0.6f - x0*x0 - y0*y0 - z0*z0;
     float t20, t40;
     if(t0 < 0.0f) n0 = t0 = t20 = t40 = gx0 = gy0 = gz0 = 0.0f;
     else {
-      gradrot3( perm[ii + perm[jj + perm[kk]]], sin_t, cos_t, &gx0, &gy0, &gz0 );
+      _kk = kk;
+      _jj = (jj + (unsigned int)perm[_kk]) % 256;
+      _ii = (ii + (unsigned int)perm[_jj]) % 256;
+      gradrot3( perm[_ii], sin_t, cos_t, &gx0, &gy0, &gz0 );
       t20 = t0 * t0;
       t40 = t20 * t20;
       n0 = t40 * graddotp3( gx0, gy0, gz0, x0, y0, z0 );
@@ -373,7 +386,10 @@ float srdnoise3( float x, float y, float z, float angle,
     float t21, t41;
     if(t1 < 0.0f) n1 = t1 = t21 = t41 = gx1 = gy1 = gz1 = 0.0f;
     else {
-      gradrot3( perm[ii + i1 + perm[jj + j1 + perm[kk + k1]]], sin_t, cos_t, &gx1, &gy1, &gz1 );
+      _kk = (kk + k1) % 256;
+      _jj = (jj + j1 + (unsigned int)perm[_kk]) % 256;
+      _ii = (ii + i1 + (unsigned int)perm[_jj]) % 256;
+      gradrot3( perm[_ii], sin_t, cos_t, &gx1, &gy1, &gz1 );
       t21 = t1 * t1;
       t41 = t21 * t21;
       n1 = t41 * graddotp3( gx1, gy1, gz1, x1, y1, z1 );
@@ -383,7 +399,10 @@ float srdnoise3( float x, float y, float z, float angle,
     float t22, t42;
     if(t2 < 0.0f) n2 = t2 = t22 = t42 = gx2 = gy2 = gz2 = 0.0f;
     else {
-      gradrot3( perm[ii + i2 + perm[jj + j2 + perm[kk + k2]]], sin_t, cos_t, &gx2, &gy2, &gz2 );
+      _kk = (kk + k2) % 256;
+      _jj = (jj + j2 + (unsigned int)perm[_kk]) % 256;
+      _ii = (ii + i2 + (unsigned int)perm[_jj]) % 256;
+      gradrot3( perm[_ii], sin_t, cos_t, &gx2, &gy2, &gz2 );
       t22 = t2 * t2;
       t42 = t22 * t22;
       n2 = t42 * graddotp3( gx2, gy2, gz2, x2, y2, z2 );
@@ -393,7 +412,10 @@ float srdnoise3( float x, float y, float z, float angle,
     float t23, t43;
     if(t3 < 0.0f) n3 = t3 = t23 = t43 = gx3 = gy3 = gz3 = 0.0f;
     else {
-      gradrot3( perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]], sin_t, cos_t, &gx3, &gy3, &gz3 );
+      _kk = (kk + 1) % 256;
+      _jj = (jj + 1 + (unsigned int)perm[_kk]) % 256;
+      _ii = (ii + 1 + (unsigned int)perm[_jj]) % 256;
+      gradrot3( perm[_ii], sin_t, cos_t, &gx3, &gy3, &gz3 );
       t23 = t3 * t3;
       t43 = t23 * t23;
       n3 = t43 * graddotp3( gx3, gy3, gz3, x3, y3, z3 );

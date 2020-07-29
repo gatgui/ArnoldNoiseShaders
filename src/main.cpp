@@ -31,9 +31,9 @@ SOFTWARE.
 #  define PREFIX ""
 #endif
 
-extern AtNodeMethods *DistortPointMtd;
-extern AtNodeMethods *VoronoiMtd;
-extern AtNodeMethods *FractalMtd;
+extern const AtNodeMethods *DistortPointMtd;
+extern const AtNodeMethods *VoronoiMtd;
+extern const AtNodeMethods *FractalMtd;
 
 namespace SSTR
 {
@@ -60,7 +60,7 @@ node_loader
    case 1:
       node->name = PREFIX "distort_point";
       node->node_type = AI_NODE_SHADER;
-      node->output_type = AI_TYPE_POINT;
+      node->output_type = AI_TYPE_VECTOR;
       node->methods = DistortPointMtd;
       strcpy(node->version, AI_VERSION);
       return true;

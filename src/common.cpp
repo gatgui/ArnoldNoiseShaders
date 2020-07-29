@@ -55,9 +55,9 @@ const char* NoiseTypeNames[] =
    NULL
 };
 
-AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *)
+AtVector GetInput(Input which, AtShaderGlobals *sg, AtNode *)
 {
-   AtPoint P;
+   AtVector P;
    
    switch (which)
    {
@@ -68,7 +68,7 @@ AtPoint GetInput(Input which, AtShaderGlobals *sg, AtNode *)
       P = sg->Po;
       break;
    case I_Pref:
-      if (!AiUDataGetPnt(SSTR::Pref, &P))
+      if (!AiUDataGetVec(SSTR::Pref, P))
       {
          AiMsgWarning("Pref node defined, defaults to P");
          P = sg->P;

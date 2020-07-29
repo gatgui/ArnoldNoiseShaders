@@ -121,7 +121,7 @@ void SetupModifier(AtNode *node, AtShaderGlobals *sg, fBm<TNoise, CombineModifie
 }
 
 template <typename TNoise>
-float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
+float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtVector &P)
 {
    float amplitude = AiShaderEvalParamFlt(p_amplitude);
    float frequency = AiShaderEvalParamFlt(p_frequency);
@@ -182,7 +182,7 @@ float EvalNoise(AtNode *node, AtShaderGlobals *sg, const AtPoint &P)
       
       if (clamp_output)
       {
-         out = CLAMP(out, output_min, output_max);
+         out = AiClamp(out, output_min, output_max);
       }
    }
    
@@ -200,7 +200,7 @@ namespace SSTR
 node_parameters
 {
    AiParameterEnum(SSTR::input, I_P, InputNames);
-   AiParameterPnt(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
+   AiParameterVec(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
    
    AiParameterFlt("amplitude", 1.0f);
    AiParameterFlt("frequency", 1.0f);
@@ -261,10 +261,10 @@ shader_evaluate
 {
    FractalData *data = (FractalData*) AiNodeGetLocalData(node);
    
-   AtPoint P;
+   AtVector P;
    if (data->evalCustomInput)
    {
-      P = AiShaderEvalParamPnt(p_custom_input);
+      P = AiShaderEvalParamVec(p_custom_input);
    }
    else
    {
@@ -274,17 +274,17 @@ shader_evaluate
    switch (data->type)
    {
    case NT_value:
-      sg->out.FLT = EvalNoise<ValueNoise>(node, sg, P);
+      sg->out.FLT() = EvalNoise<ValueNoise>(node, sg, P);
       break;
    case NT_perlin:
-      sg->out.FLT = EvalNoise<PerlinNoise>(node, sg, P);
+      sg->out.FLT() = EvalNoise<PerlinNoise>(node, sg, P);
       break;
    case NT_flow:
-      sg->out.FLT = EvalNoise<FlowNoise>(node, sg, P);
+      sg->out.FLT() = EvalNoise<FlowNoise>(node, sg, P);
       break;
    case NT_simplex:
    default:
-      sg->out.FLT = EvalNoise<SimplexNoise>(node, sg, P);
+      sg->out.FLT() = EvalNoise<SimplexNoise>(node, sg, P);
       break;
    }
 }

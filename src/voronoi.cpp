@@ -83,17 +83,17 @@ static const char *OutputModeNames[] =
    NULL
 };
 
-float ManhattanDistance(const AtPoint &p1, const AtPoint &p2)
+float ManhattanDistance(const AtVector &p1, const AtVector &p2)
 {
    return fabsf(p1.x - p2.x) + fabsf(p1.y - p2.y) + fabsf(p1.z - p2.z);
 }
 
-float EuclidianDistance(const AtPoint &p1, const AtPoint &p2)
+float EuclidianDistance(const AtVector &p1, const AtVector &p2)
 {
    return AiV3Length(p1 - p2);
 }
 
-float ChebyshevDistance(const AtPoint &p1, const AtPoint &p2)
+float ChebyshevDistance(const AtVector &p1, const AtVector &p2)
 {
    AtVector diff = p1 - p2;
    return std::max(std::max(fabsf(diff.x), fabsf(diff.y)), fabsf(diff.z));
@@ -111,7 +111,7 @@ namespace SSTR
 node_parameters
 {
    AiParameterEnum(SSTR::input, I_P, InputNames);
-   AiParameterPnt(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
+   AiParameterVec(SSTR::custom_input, 0.0f, 0.0f, 0.0f);
    AiParameterFlt("displacement", 0.5f);
    AiParameterFlt("frequency", 1.0f);
    AiParameterEnum(SSTR::distance_func, DF_euclidian, DistanceFuncNames);
@@ -156,10 +156,10 @@ shader_evaluate
 {
    VoronoiData *data = (VoronoiData*) AiNodeGetLocalData(node);
    
-   AtPoint P;
+   AtVector P;
    if (data->evalCustomInput)
    {
-      P = AiShaderEvalParamPnt(p_custom_input);
+      P = AiShaderEvalParamVec(p_custom_input);
    }
    else
    {
@@ -170,7 +170,7 @@ shader_evaluate
    float frequency = AiShaderEvalParamFlt(p_frequency);
    int seed = AiShaderEvalParamInt(p_seed);
    
-   float (*evalDist)(const AtPoint&, const AtPoint&);
+   float (*evalDist)(const AtVector&, const AtVector&);
    
    switch (data->distanceFunc)
    {
@@ -191,9 +191,9 @@ shader_evaluate
    int ybase = int(floorf(P.y));
    int zbase = int(floorf(P.z));
    
-   AtPoint Pf[4] = {P, P, P, P};
+   AtVector Pf[4] = {P, P, P, P};
    float f[4] = {2147483647.0f, 2147483647.0f, 2147483647.0f, 2147483647.0f};
-   AtPoint Pcur;
+   AtVector Pcur;
    
    // Inside each unit cube, there is a seed point at a random position.  Go
    // through each of the nearby cubes until we find a cube with a seed point
@@ -256,28 +256,28 @@ shader_evaluate
    switch (data->outputMode)
    {
    case OM_constant:
-      sg->out.FLT = displacement * 0.5f * (1.0f + float(noise::ValueNoise3D(int(floorf(Pf[0].x)), int(floorf(Pf[0].y)), int(floorf(Pf[0].z)))));
+      sg->out.FLT() = displacement * 0.5f * (1.0f + float(noise::ValueNoise3D(int(floorf(Pf[0].x)), int(floorf(Pf[0].y)), int(floorf(Pf[0].z)))));
       break;
    case OM_f1:
-      sg->out.FLT = displacement * f[0];
+      sg->out.FLT() = displacement * f[0];
       break;
    case OM_f2:
-      sg->out.FLT = displacement * f[1];
+      sg->out.FLT() = displacement * f[1];
       break;
    case OM_f3:
-      sg->out.FLT = displacement * f[2];
+      sg->out.FLT() = displacement * f[2];
       break;
    case OM_f4:
-      sg->out.FLT = displacement * f[3];
+      sg->out.FLT() = displacement * f[3];
       break;
    case OM_add:
-      sg->out.FLT = displacement * (f[0] + f[1]);
+      sg->out.FLT() = displacement * (f[0] + f[1]);
       break;
    case OM_sub:
-      sg->out.FLT = displacement * (f[1] - f[0]);
+      sg->out.FLT() = displacement * (f[1] - f[0]);
       break;
    case OM_mul:
-      sg->out.FLT = displacement * (f[0] * f[1]);
+      sg->out.FLT() = displacement * (f[0] * f[1]);
       break;
    case OM_weighted:
       {
@@ -285,11 +285,11 @@ shader_evaluate
          float w2 = AiShaderEvalParamFlt(p_weight2);
          float w3 = AiShaderEvalParamFlt(p_weight3);
          float w4 = AiShaderEvalParamFlt(p_weight4);
-         sg->out.FLT = displacement * (w1 * f[0] + w2 * f[1] + w3 * f[2] + w4 * f[3]);
+         sg->out.FLT() = displacement * (w1 * f[0] + w2 * f[1] + w3 * f[2] + w4 * f[3]);
       }
       break;
    default:
-      sg->out.FLT = 0.0f;
+      sg->out.FLT() = 0.0f;
       break;
    }
 }
